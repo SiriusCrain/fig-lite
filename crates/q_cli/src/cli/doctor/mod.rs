@@ -77,7 +77,6 @@ use fig_util::env_var::{
     PROCESS_LAUNCHED_BY_Q,
     Q_PARENT,
     Q_TERM,
-    Q_USING_ZSH_AUTOSUGGESTIONS,
     QTERM_SESSION_ID,
 };
 use fig_util::macos::BUNDLE_CONTENTS_INFO_PLIST_PATH;
@@ -522,7 +521,7 @@ impl DoctorCheck for RemoteSocketCheck {
     }
 
     async fn check(&self, _: &()) -> Result<(), DoctorError> {
-        let q_parent = std::env::var(Q_PARENT).ok();
+        let q_parent = fig_os_shim::Env::new().q_parent().ok();
         let remote_socket = remote_socket_path().map_err(|err| DoctorError::Error {
             reason: "Unable to get remote socket path".into(),
             info: vec![
@@ -688,14 +687,14 @@ impl DoctorCheck for FigIntegrationsCheck {
         //    });
         //}
 
-        match std::env::var(Q_TERM).as_deref() {
+        match fig_os_shim::Env::new().q_term().as_deref() {
             Ok(env!("CARGO_PKG_VERSION")) => Ok(()),
             Ok(ver) if env!("CARGO_PKG_VERSION").ends_with("-dev") || ver.ends_with("-dev") => Err(doctor_warning!(
                 "{PTY_BINARY_NAME} is running with a different version than {PRODUCT_NAME} CLI, it looks like you are running a development version of {PRODUCT_NAME} however"
             )),
             Ok(_) => Err(DoctorError::Error {
                 reason: "This terminal is not running with the latest integration, please restart your terminal".into(),
-                info: vec![format!("{Q_TERM}={}", std::env::var(Q_TERM).unwrap_or_default()).into()],
+                info: vec![format!("{Q_TERM}={}", fig_os_shim::Env::new().q_term().unwrap_or_default()).into()],
                 fix: None,
                 error: None,
             }),
@@ -704,7 +703,7 @@ impl DoctorCheck for FigIntegrationsCheck {
                     "{PTY_BINARY_NAME} is not running in this terminal, please try restarting your terminal"
                 )
                 .into(),
-                info: vec![format!("{Q_TERM}={}", std::env::var(Q_TERM).unwrap_or_default()).into()],
+                info: vec![format!("{Q_TERM}={}", fig_os_shim::Env::new().q_term().unwrap_or_default()).into()],
                 fix: None,
                 error: None,
             }),
@@ -745,7 +744,7 @@ impl DoctorCheck for InlineCheck {
             ));
         }
 
-        if std::env::var_os(Q_USING_ZSH_AUTOSUGGESTIONS).is_some() {
+        if fig_os_shim::Env::new().q_using_zsh_autosuggestions() {
             return Err(DoctorError::Error {
                 reason: "Using zsh-autosuggestions is not supported at the same time as Inline".into(),
                 info: vec![

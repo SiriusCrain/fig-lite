@@ -3,7 +3,6 @@ use std::path::Path;
 use std::sync::Mutex;
 
 use fig_util::CHAT_BINARY_NAME;
-use fig_util::env_var::Q_LOG_LEVEL;
 use thiserror::Error;
 use tracing::info;
 use tracing::level_filters::LevelFilter;
@@ -192,11 +191,11 @@ pub fn initialize_logging<T: AsRef<Path>>(args: LogArgs<T>) -> Result<LogGuard, 
 ///
 /// Returns a string identifying the current log level.
 pub fn get_log_level() -> String {
-    Q_LOG_LEVEL_GLOBAL
-        .lock()
-        .unwrap()
-        .clone()
-        .unwrap_or_else(|| std::env::var(Q_LOG_LEVEL).unwrap_or_else(|_| DEFAULT_FILTER.to_string()))
+    Q_LOG_LEVEL_GLOBAL.lock().unwrap().clone().unwrap_or_else(|| {
+        fig_os_shim::Env::new()
+            .q_log_level()
+            .unwrap_or_else(|_| DEFAULT_FILTER.to_string())
+    })
 }
 
 /// Set the log level to the given level.
@@ -247,7 +246,7 @@ fn create_filter_layer() -> EnvFilter {
         .lock()
         .unwrap()
         .clone()
-        .or_else(|| std::env::var(Q_LOG_LEVEL).ok());
+        .or_else(|| fig_os_shim::Env::new().q_log_level().ok());
 
     match log_level {
         Some(level) => EnvFilter::builder()
