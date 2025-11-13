@@ -2,9 +2,9 @@ import autocompleteDemo from "@assets/images/autocomplete_demo.gif";
 import translateDemo from "@assets/images/translate_demo.gif";
 import chatDemo from "@assets/images/chat_demo.gif";
 import { Link } from "@/components/ui/link";
-import { QLogo } from "@/components/svg/icons";
-import { AUTOCOMPLETE_SSH_WIKI_URL, Q_MIGRATION_URL } from "@/lib/constants";
+import { AUTOCOMPLETE_SSH_WIKI_URL, KIRO_CLI_URL } from "@/lib/constants";
 import { Terminal } from "@/components/ui/terminal";
+import { KiroLogo } from "@/components/svg/logo";
 
 export default function Page() {
   return (
@@ -14,20 +14,27 @@ export default function Page() {
           Getting started
         </h1>
       </div>
-      <section className="flex flex-col p-6 gap-4 w-full gradient-q-secondary-light-alt rounded-lg items-start text-white">
+      <section className="flex flex-col p-6 gap-4 w-full rounded-2xl items-start text-white q-banner">
         <div className="flex flex-row gap-4 w-full items-center">
-          <QLogo size={42} />
+          <div className="flex-shrink-0">
+            <KiroLogo size={60} />
+          </div>
           <div className="flex flex-col gap-1">
-            <h1 className="font-bold text-xl font-ember leading-none">
-              CodeWhisperer is now Amazon Q
+            <h1 className="font-bold text-lg font-ember leading-none">
+              Amazon Q Developer CLI users can now upgrade to the Kiro CLI
             </h1>
-            <p className="text-base leading-tight">
+            <p className="text-sm leading-tight">
+              The Kiro CLI leverages the agentic features of Q CLI and can be
+              used with your existing Q Developer subscription. If you have auto
+              updates enabled for the Q CLI, unless you disable that setting, Q
+              CLI will auto update to Kiro CLI on 11/24{" "}
               <Link
-                href={Q_MIGRATION_URL}
-                className="font-medium"
+                href={KIRO_CLI_URL}
+                className="font-medium no-underline"
                 variant="primary"
+                style={{ color: "var(--q-banner-link)" }}
               >
-                Read the announcement blog post
+                Learn more &gt;
               </Link>
             </p>
           </div>
