@@ -218,24 +218,13 @@ impl<T: PkceClient + Send + Sync + 'static> PkceState<T> {
 }
 
 pub async fn status(_request: AuthStatusRequest) -> RequestResult {
-    let token = fig_auth::builder_id_token().await;
+    // Patched: always report authed so the dashboard doesn't gate features
+    // behind an AWS login the user can't complete offline.
     Ok(ServerOriginatedSubMessage::AuthStatusResponse(AuthStatusResponse {
-        authed: matches!(token, Ok(Some(_))),
-        auth_kind: match &token {
-            Ok(Some(auth)) => match auth.token_type() {
-                TokenType::BuilderId => Some(AuthKind::BuilderId.into()),
-                TokenType::IamIdentityCenter => Some(AuthKind::IamIdentityCenter.into()),
-            },
-            _ => None,
-        },
-        start_url: match &token {
-            Ok(Some(auth)) => auth.start_url.clone(),
-            _ => None,
-        },
-        region: match &token {
-            Ok(Some(auth)) => auth.region.clone(),
-            _ => None,
-        },
+        authed: true,
+        auth_kind: Some(AuthKind::BuilderId.into()),
+        start_url: None,
+        region: None,
     })
     .into())
 }

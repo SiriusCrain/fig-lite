@@ -159,11 +159,8 @@ async fn main() -> ExitCode {
         platform::gtk::init().expect("Failed initializing GTK");
     }
 
-    let is_logged_in = fig_auth::is_logged_in().await;
-
-    if !is_logged_in {
-        tracing::info!("Showing onboarding");
-    }
+    // Patched: bypass login gate so autocomplete popup works offline.
+    let is_logged_in = true;
 
     let accessibility_enabled = PlatformState::accessibility_is_enabled().unwrap_or(true);
     let visible = !cli.no_dashboard;

@@ -4,18 +4,12 @@ use fig_os_shim::{
     Os,
 };
 use fig_settings::keys::UPDATE_AVAILABLE_KEY;
-use fig_settings::settings::get_bool_or;
-use fig_telemetry::{
-    InstallMethod,
-    get_install_method,
-};
 use fig_util::CLI_BINARY_NAME;
 use fig_util::manifest::{
     Variant,
     manifest,
 };
 use semver::Version;
-use tracing::warn;
 
 fn current_version() -> Version {
     Version::parse(env!("CARGO_PKG_VERSION")).unwrap()
@@ -43,50 +37,9 @@ fn print_update_message(context: &Context, version: &Version) {
     };
 }
 
-pub fn check_for_update(context: &Context) {
-    let not_linux = context.platform().os() != Os::Linux;
-    let in_cloudshell = context.env().in_cloudshell();
-    let autoupdate_disabled = !get_bool_or("app.disableAutoupdates", true);
-    let installed_via_toolbox = get_install_method() == InstallMethod::Toolbox;
-
-    // If any of the previous conditions, do not show the update notification
-    if not_linux | in_cloudshell | autoupdate_disabled | installed_via_toolbox {
-        return;
-    }
-
-    tokio::spawn(async {
-        match fig_install::check_for_updates(false, true).await {
-            Ok(Some(pkg)) => {
-                if let Err(err) = fig_settings::state::set_value(UPDATE_AVAILABLE_KEY, pkg.version.to_string()) {
-                    warn!(?err, "Error setting {UPDATE_AVAILABLE_KEY}: {err}");
-                }
-            },
-            Ok(None) => {},
-            Err(err) => {
-                warn!(?err, "Error checking for updates: {err}");
-            },
-        };
-    });
-
-    match fig_settings::state::get_string(UPDATE_AVAILABLE_KEY) {
-        Ok(Some(version)) => match Version::parse(&version) {
-            Ok(version) => {
-                let current_version = current_version();
-                if version > current_version {
-                    print_update_message(context, &version);
-                }
-            },
-            Err(err) => {
-                warn!(?err, "Error parsing {UPDATE_AVAILABLE_KEY}: {err}");
-                let _ = fig_settings::state::remove_value(UPDATE_AVAILABLE_KEY);
-            },
-        },
-        Ok(None) => {},
-        Err(err) => {
-            warn!(?err, "Error getting {UPDATE_AVAILABLE_KEY}: {err}");
-            let _ = fig_settings::state::remove_value(UPDATE_AVAILABLE_KEY);
-        },
-    }
+pub fn check_for_update(_context: &Context) {
+    // Patched: always clear any stored update notice and skip update checks.
+    fig_settings::state::remove_value(UPDATE_AVAILABLE_KEY).ok();
 }
 
 #[cfg(test)]

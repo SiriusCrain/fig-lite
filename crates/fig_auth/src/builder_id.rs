@@ -53,7 +53,6 @@ use time::OffsetDateTime;
 use tracing::{
     debug,
     error,
-    info,
     trace,
     warn,
 };
@@ -572,17 +571,8 @@ pub async fn is_amzn_user() -> Result<bool> {
 }
 
 pub async fn is_logged_in() -> bool {
-    match builder_id_token().await {
-        Ok(Some(_)) => true,
-        Ok(None) => {
-            info!("not logged in - no valid token found");
-            false
-        },
-        Err(err) => {
-            warn!(?err, "failed to try to load a builder id token");
-            false
-        },
-    }
+    // Patched: always report logged-in for local-first dev use.
+    true
 }
 
 pub async fn logout() -> Result<()> {
