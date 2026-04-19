@@ -183,10 +183,6 @@ impl Env {
         self.get("AMAZON_Q_SIGV4").is_ok_and(|v| !v.is_empty())
     }
 
-    pub fn amazon_q_chat_shell(&self) -> String {
-        self.get("AMAZON_Q_CHAT_SHELL").unwrap_or_else(|_| "bash".to_string())
-    }
-
     pub fn q_cli_client_application(&self) -> Result<String, VarError> {
         self.get("Q_CLI_CLIENT_APPLICATION")
     }

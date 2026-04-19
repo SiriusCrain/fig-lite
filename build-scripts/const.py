@@ -4,13 +4,11 @@ import pathlib
 APP_NAME = "Amazon Q"
 CLI_BINARY_NAME = "q"
 CLI_BINARY_NAME_MINIMAL = "q-minimal"
-CHAT_BINARY_NAME = "qchat"
 PTY_BINARY_NAME = "qterm"
 DESKTOP_BINARY_NAME = "amazon-q"
 URL_SCHEMA = "q"
 TAURI_PRODUCT_NAME = "amazon-q"
 LINUX_PACKAGE_NAME = "amazon-q"
-CHAT_BINARY_BRANCH = "prod"
 
 # macos specific
 MACOS_BUNDLE_ID = "com.amazon.codewhisperer"
@@ -23,7 +21,6 @@ LINUX_MODERN_GNOME_EXTENSION_UUID = "amazon-q-for-cli-gnome-integration@aws.amaz
 
 # cargo packages
 CLI_PACKAGE_NAME = "q_cli"
-CHAT_PACKAGE_NAME = "chat_cli"
 PTY_PACKAGE_NAME = "figterm"
 DESKTOP_PACKAGE_NAME = "fig_desktop"
 DESKTOP_FUZZ_PACKAGE_NAME = "fig_desktop-fuzz"

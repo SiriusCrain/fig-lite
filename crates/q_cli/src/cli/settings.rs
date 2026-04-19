@@ -6,7 +6,6 @@ use clap::{
     Args,
     Parser,
     Subcommand,
-    ValueEnum,
 };
 use eyre::{
     Result,
@@ -36,7 +35,6 @@ use crate::util::desktop::{
 use crate::util::{
     CliContext,
     app_not_running_message,
-    qchat_path,
 };
 
 #[derive(Debug, Subcommand, PartialEq, Eq)]
@@ -101,39 +99,19 @@ impl SettingsArgs {
                     bail!("The EDITOR environment variable is not set")
                 }
             },
-            Some(SettingsSubcommands::List { all, format }) => {
-                let mut args = vec!["settings".to_string(), "list".to_string()];
-                if all {
-                    args.push("--all".to_string());
+            Some(SettingsSubcommands::List { all: _, format } | SettingsSubcommands::All { format }) => {
+                let settings = fig_settings::OldSettings::load()?;
+                let map = settings.map();
+                match format {
+                    OutputFormat::Plain => {
+                        for (key, value) in map.iter() {
+                            println!("{key} = {value}");
+                        }
+                    },
+                    OutputFormat::Json => println!("{}", serde_json::to_string(&*map)?),
+                    OutputFormat::JsonPretty => println!("{}", serde_json::to_string_pretty(&*map)?),
                 }
-                if format != OutputFormat::default() {
-                    args.push("--format".to_string());
-                    args.push(format.to_possible_value().unwrap().get_name().to_string());
-                }
-
-                let status = tokio::process::Command::new(qchat_path()?).args(&args).status().await?;
-
-                Ok(if status.success() {
-                    ExitCode::SUCCESS
-                } else {
-                    ExitCode::FAILURE
-                })
-            },
-            Some(SettingsSubcommands::All { format }) => {
-                let mut args = vec!["settings".to_string(), "list".to_string()];
-
-                if format != OutputFormat::default() {
-                    args.push("--format".to_string());
-                    args.push(format.to_possible_value().unwrap().get_name().to_string());
-                }
-
-                let status = tokio::process::Command::new(qchat_path()?).args(&args).status().await?;
-
-                Ok(if status.success() {
-                    ExitCode::SUCCESS
-                } else {
-                    ExitCode::FAILURE
-                })
+                Ok(ExitCode::SUCCESS)
             },
             None => match &self.key {
                 Some(key) => match (&self.value, self.delete) {

@@ -1,5 +1,3 @@
-import boto3
-
 from dataclasses import dataclass
 from functools import cache
 import os
@@ -18,7 +16,6 @@ from util import (
     run_cmd,
     run_cmd_output,
     info,
-    warn,
     set_executable,
     version,
     tauri_product_name,
@@ -36,9 +33,6 @@ from signing import (
 from importlib import import_module
 from const import (
     APP_NAME,
-    CHAT_BINARY_BRANCH,
-    CHAT_BINARY_NAME,
-    CHAT_PACKAGE_NAME,
     CLI_BINARY_NAME,
     CLI_PACKAGE_NAME,
     DESKTOP_BINARY_NAME,
@@ -165,66 +159,6 @@ def build_cargo_bin(
         return out_path
 
 
-def fetch_chat_bin(chat_build_bucket_name: str | None, chat_download_role_arn: str | None) -> pathlib.Path:
-    """
-    Downloads the chat binary from the provided bucket (using the IAM role to authenticate as).
-    If the build bucket or role is not provided, then a dummy script is created and returned instead.
-
-    The returned path follows the convention: `{binary_name}-{target_triple}`
-    """
-    info(f"Chat build bucket name: {chat_build_bucket_name}")
-    info(f"IAM Role to assume: {chat_download_role_arn}")
-
-    # To prevent requiring a network request and S3 bucket for downloading the chat
-    # binary (e.g. for local dev testing), we create a dummy script to bundle instead.
-    if not chat_build_bucket_name or not chat_download_role_arn:
-        warn("missing required chat arguments, creating dummy binary")
-        dummy_dir = BUILD_DIR / "dummy_chat"
-        dummy_dir.mkdir(exist_ok=True)
-        dummy_path = dummy_dir / f"{CHAT_BINARY_NAME}-{get_target_triple()}"
-        dummy_path.write_text("#!/usr/bin/env sh\n\necho dummy chat binary\n")
-        set_executable(dummy_path)
-        return dummy_path
-
-    """Get S3 client with cross-account role credentials"""
-    if profile_name := os.getenv("CHAT_BUILD_BUCKET_ACCESS_AWS_PROFILE"):
-        info(f"Using AWS_PROFILE override {profile_name} for accessing the chat build bucket")
-        session = boto3.Session(profile_name=profile_name)
-        sts = session.client("sts")
-    else:
-        sts = boto3.client("sts")
-
-    # Assume the cross-account role
-    response = sts.assume_role(RoleArn=chat_download_role_arn, RoleSessionName="QChatBuildBucketS3Access")
-    creds = response["Credentials"]
-
-    # Return S3 client with assumed role credentials
-    s3 = boto3.client(
-        "s3",
-        aws_access_key_id=creds["AccessKeyId"],
-        aws_secret_access_key=creds["SecretAccessKey"],
-        aws_session_token=creds["SessionToken"],
-    )
-
-    # The path to the download should be:
-    # BUILD_BUCKET/{CHAT_BINARY_BRANCH}/latest/{target}/{CHAT_BINARY_NAME}.zip
-    target = get_target_triple()
-    chat_bucket_path = f"{CHAT_BINARY_BRANCH}/latest/{target}/{CHAT_BINARY_NAME}.zip"
-    chat_dl_dir = BUILD_DIR / "chat_download"
-    chat_dl_dir.mkdir(exist_ok=True)
-    chat_dl_path = chat_dl_dir / f"{CHAT_BINARY_NAME}.zip"
-    info(f"Downloading {CHAT_BINARY_NAME} zip from bucket: {chat_bucket_path} and path: {chat_bucket_path}")
-    s3.download_file(chat_build_bucket_name, chat_bucket_path, chat_dl_path)
-
-    # unzip and return the path to the contained binary
-    run_cmd(["unzip", "-o", chat_dl_path, "-d", chat_dl_dir])
-
-    # Append target triple, as expected by tauri cli.
-    chat_path = chat_dl_dir / f"{CHAT_BINARY_NAME}-{target}"
-    (chat_dl_dir / CHAT_BINARY_NAME).rename(chat_path)
-    return chat_path
-
-
 @cache
 def gen_manifest() -> str:
     return json.dumps(
@@ -275,7 +209,7 @@ def build_macos_ime(
     return input_method_app
 
 
-def macos_tauri_config(cli_path: pathlib.Path, chat_path: pathlib.Path, pty_path: pathlib.Path, target: str) -> str:
+def macos_tauri_config(cli_path: pathlib.Path, pty_path: pathlib.Path, target: str) -> str:
     config = {
         "tauri": {
             "bundle": {
@@ -283,7 +217,6 @@ def macos_tauri_config(cli_path: pathlib.Path, chat_path: pathlib.Path, pty_path
                     # Note that tauri bundling expects the target triple to be appended to each binary,
                     # but in the config it must be strippled.
                     str(cli_path).removesuffix(f"-{target}"),
-                    str(chat_path).removesuffix(f"-{target}"),
                     str(pty_path).removesuffix(f"-{target}"),
                 ],
                 "resources": ["manifest.json"],
@@ -297,7 +230,6 @@ def build_macos_desktop_app(
     release: bool,
     pty_path: pathlib.Path,
     cli_path: pathlib.Path,
-    chat_path: pathlib.Path,
     npm_packages: NpmBuildOutput,
     is_prod: bool,
     signing_data: CdSigningData | None,
@@ -315,9 +247,7 @@ def build_macos_desktop_app(
 
     info("Building tauri config")
     tauri_config_path = pathlib.Path(DESKTOP_PACKAGE_PATH) / "build-config.json"
-    tauri_config_path.write_text(
-        macos_tauri_config(cli_path=cli_path, chat_path=chat_path, pty_path=pty_path, target=target)
-    )
+    tauri_config_path.write_text(macos_tauri_config(cli_path=cli_path, pty_path=pty_path, target=target))
 
     info("Building", DESKTOP_PACKAGE_NAME)
 
@@ -463,14 +393,13 @@ def sign_and_rebundle_macos(app_path: pathlib.Path, dmg_path: pathlib.Path, sign
     info("Done signing!!")
 
 
-def build_linux_minimal(cli_path: pathlib.Path, pty_path: pathlib.Path, chat_path: pathlib.Path):
+def build_linux_minimal(cli_path: pathlib.Path, pty_path: pathlib.Path):
     """
     Creates tar.gz, tar.xz, tar.zst, and zip archives under `BUILD_DIR`.
 
     Each archive has the following structure:
     - archive/bin/{cli_binary}
     - archive/bin/{pty_binary}
-    - archive/bin/{chat_binary}
     - archive/install.sh
     - archive/README
     - archive/BUILD-INFO
@@ -501,7 +430,6 @@ def build_linux_minimal(cli_path: pathlib.Path, pty_path: pathlib.Path, chat_pat
 
     shutil.copy2(cli_path, archive_bin_path / CLI_BINARY_NAME)
     shutil.copy2(pty_path, archive_bin_path / PTY_BINARY_NAME)
-    shutil.copy2(chat_path, archive_bin_path / CHAT_BINARY_NAME)
 
     signer = load_gpg_signer()
 
@@ -542,7 +470,6 @@ def build_linux_minimal(cli_path: pathlib.Path, pty_path: pathlib.Path, chat_pat
 def linux_tauri_config(
     cli_path: pathlib.Path,
     pty_path: pathlib.Path,
-    chat_path: pathlib.Path,
     dashboard_path: pathlib.Path,
     autocomplete_path: pathlib.Path,
     vscode_path: pathlib.Path,
@@ -559,7 +486,6 @@ def linux_tauri_config(
                 "externalBin": [
                     str(cli_path).removesuffix(f"-{target}"),
                     str(pty_path).removesuffix(f"-{target}"),
-                    str(chat_path).removesuffix(f"-{target}"),
                 ],
                 "targets": ["appimage"],
                 "icon": ["icons/128x128.png"],
@@ -612,7 +538,6 @@ def make_linux_bundle_metadata(packaged_as: Package) -> pathlib.Path:
 class LinuxDebResources:
     cli_path: pathlib.Path
     pty_path: pathlib.Path
-    chat_path: pathlib.Path
     desktop_path: pathlib.Path
     themes_path: pathlib.Path
     legacy_extension_dir_path: pathlib.Path
@@ -651,7 +576,6 @@ def build_linux_deb(
     bin_path.mkdir(parents=True)
     shutil.copy(resources.cli_path, bin_path / CLI_BINARY_NAME)
     shutil.copy(resources.pty_path, bin_path / PTY_BINARY_NAME)
-    shutil.copy(resources.chat_path, bin_path / CHAT_BINARY_NAME)
     shutil.copy(resources.desktop_path, bin_path / DESKTOP_BINARY_NAME)
 
     info("Copying /usr/share resources")
@@ -708,7 +632,6 @@ def build_linux_full(
     release: bool,
     cli_path: pathlib.Path,
     pty_path: pathlib.Path,
-    chat_path: pathlib.Path,
     npm_packages: NpmBuildOutput,
     features: Mapping[str, Sequence[str]] | None = None,
     linux_packages: str = "all",
@@ -749,7 +672,6 @@ def build_linux_full(
         linux_tauri_config(
             cli_path=cli_path,
             pty_path=pty_path,
-            chat_path=chat_path,
             dashboard_path=npm_packages.dashboard_path,
             autocomplete_path=npm_packages.autocomplete_path,
             vscode_path=npm_packages.vscode_path,
@@ -816,7 +738,6 @@ def build_linux_full(
         deb_resources = LinuxDebResources(
             cli_path=cli_path,
             pty_path=pty_path,
-            chat_path=chat_path,
             desktop_path=desktop_path,
             themes_path=themes_path,
             legacy_extension_dir_path=legacy_extension_dir_path,
@@ -896,8 +817,6 @@ def build(
     output_bucket: str | None = None,
     signing_bucket: str | None = None,
     aws_account_id: str | None = None,
-    chat_build_bucket_name: str | None = None,
-    chat_download_role_arn: str | None = None,
     apple_id_secret: str | None = None,
     signing_role_name: str | None = None,
     stage_name: str | None = None,
@@ -956,11 +875,6 @@ def build(
     for variant in variants:
         info(f"Building variant: {variant.name}")
 
-        info("Fetching", CHAT_PACKAGE_NAME)
-        chat_path = fetch_chat_bin(
-            chat_build_bucket_name=chat_build_bucket_name, chat_download_role_arn=chat_download_role_arn
-        )
-
         info("Building", CLI_PACKAGE_NAME)
         cli_path = build_cargo_bin(
             variant=variant,
@@ -989,7 +903,6 @@ def build(
             build_paths = build_macos_desktop_app(
                 release=release,
                 cli_path=cli_path,
-                chat_path=chat_path,
                 pty_path=pty_path,
                 npm_packages=npm_packages,
                 signing_data=signing_data,
@@ -1015,14 +928,13 @@ def build(
                     release=release,
                     cli_path=cli_path,
                     pty_path=pty_path,
-                    chat_path=chat_path,
                     npm_packages=npm_packages,
                     features=cargo_features,
                     linux_packages=linux_packages,
                 )
                 build_output[variant] = BinaryPaths(cli_path=cli_path, pty_path=pty_path)
             else:
-                build_linux_minimal(cli_path=cli_path, pty_path=pty_path, chat_path=chat_path)
+                build_linux_minimal(cli_path=cli_path, pty_path=pty_path)
                 build_output[variant] = BinaryPaths(cli_path=cli_path, pty_path=pty_path)
 
     return build_output

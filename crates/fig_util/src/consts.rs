@@ -14,7 +14,6 @@ pub const TAURI_PRODUCT_NAME: &str = "amazon_q";
 
 pub const CLI_BINARY_NAME: &str = "q";
 pub const CLI_BINARY_NAME_MINIMAL: &str = "q-minimal";
-pub const CHAT_BINARY_NAME: &str = "qchat";
 pub const PTY_BINARY_NAME: &str = "qterm";
 
 pub const CLI_CRATE_NAME: &str = "q_cli";

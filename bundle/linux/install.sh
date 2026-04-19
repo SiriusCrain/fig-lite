@@ -8,7 +8,6 @@ set -o nounset
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 CLI_BINARY_NAME="q"
-CHAT_BINARY_NAME="qchat"
 PTY_BINARY_NAME="qterm"
 
 log_error() {
@@ -140,7 +139,6 @@ fi
 
 if [ -n "${Q_INSTALL_GLOBAL:-}" ]; then
     install -m 755 "$SCRIPT_DIR/bin/$CLI_BINARY_NAME" /usr/local/bin/
-    install -m 755 "$SCRIPT_DIR/bin/$CHAT_BINARY_NAME" /usr/local/bin/
     install -m 755 "$SCRIPT_DIR/bin/$PTY_BINARY_NAME" /usr/local/bin/
 
     if [ -z "${Q_SKIP_SETUP:-}" ]; then
@@ -151,7 +149,6 @@ else
     mkdir -p "$HOME/.local/bin"
 
     install -m 755 "$SCRIPT_DIR/bin/$CLI_BINARY_NAME" "$HOME/.local/bin/"
-    install -m 755 "$SCRIPT_DIR/bin/$CHAT_BINARY_NAME" "$HOME/.local/bin/"
     install -m 755 "$SCRIPT_DIR/bin/$PTY_BINARY_NAME" "$HOME/.local/bin/"
 
     if [ -z "${Q_SKIP_SETUP:-}" ]; then
