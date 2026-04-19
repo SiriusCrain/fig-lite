@@ -3,7 +3,7 @@
     "distDir": []
   },
   "package": {
-    "productName": "q_desktop"
+    "productName": "Amazon Q"
   },
   "tauri": {
     "bundle": {

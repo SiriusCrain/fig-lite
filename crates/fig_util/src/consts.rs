@@ -2,15 +2,15 @@ pub const APP_BUNDLE_ID: &str = "com.amazon.codewhisperer";
 pub const APP_BUNDLE_NAME: &str = "Amazon Q.app";
 
 #[cfg(target_os = "macos")]
-pub const APP_PROCESS_NAME: &str = "q_desktop";
+pub const APP_PROCESS_NAME: &str = "amazon_q";
 #[cfg(target_os = "linux")]
-pub const APP_PROCESS_NAME: &str = "q-desktop";
+pub const APP_PROCESS_NAME: &str = "amazon-q";
 
 #[cfg(windows)]
-pub const APP_PROCESS_NAME: &str = "q_desktop.exe";
+pub const APP_PROCESS_NAME: &str = "amazon_q.exe";
 
 /// The name configured under `"package.productName"` in the tauri.conf.json file.
-pub const TAURI_PRODUCT_NAME: &str = "q_desktop";
+pub const TAURI_PRODUCT_NAME: &str = "amazon_q";
 
 pub const CLI_BINARY_NAME: &str = "q";
 pub const CLI_BINARY_NAME_MINIMAL: &str = "q-minimal";

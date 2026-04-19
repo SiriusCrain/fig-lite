@@ -1,0 +1,26 @@
+name: amazon-q
+
+services:
+  amazon-q-build:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    image: amazon-q-builder
+    container_name: amazon-q-build
+    volumes:
+      - .:/src
+      - cargo-registry:/root/.cargo/registry
+      - cargo-git:/root/.cargo/git
+    environment:
+      # Passed to the container so it can restore ownership of files written
+      # to the bind-mounted source tree back to the host user after the build.
+      - HOST_UID=${UID:-1000}
+      - HOST_GID=${GID:-1000}
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse
+
+volumes:
+  cargo-registry:
+  cargo-git:

@@ -12,7 +12,7 @@ install_linux_deps() {
   elif [ -f /etc/arch-release ]; then
     echo "Detected Arch"
     sudo pacman -Syu --noconfirm
-    sudo pacman -S --noconfirm --needed webkit2gtk base-devel curl wget openssl appmenu-gtk-module gtk3 libappindicator-gtk3 librsvg libvips cmake jq pkgconf
+    sudo pacman -S --noconfirm --needed webkit2gtk-4.1 base-devel curl wget openssl gtk3 libappindicator-gtk3 librsvg libvips cmake jq pkgconf
   elif [ -f /etc/fedora-release ]; then
     echo "Detected Fedora"
     sudo dnf check-update
@@ -31,26 +31,20 @@ install_macos_deps() {
 }
 
 install_rust() {
-  echo "Installing Rust toolchain..."
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-    # Detect shell and source the correct env file
+  if command -v rustup >/dev/null 2>&1; then
+    echo "Rust toolchain already installed, skipping rustup install."
+  else
+    echo "Installing Rust toolchain..."
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+  fi
 
-  SHELL_NAME=$(basename "$SHELL")
-  case "$SHELL_NAME" in
-    fish)
-      source "$HOME/.cargo/env.fish"
-      ;;
-    nu)
-      source "$HOME/.cargo/env.nu"
-      ;;
-    *)
-      . "$HOME/.cargo/env"
-      ;;
-  esac
+  # This script runs under bash, so always source the POSIX env file
+  # to make cargo/rustup available for the rest of this script.
+  [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
   rustup default stable
   rustup toolchain install nightly
-  cargo install typos-cli
+  cargo install --locked typos-cli
 
   if [[ "$OS" == "Darwin" ]]; then
     rustup target add x86_64-apple-darwin

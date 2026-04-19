@@ -1,0 +1,83 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    HOME=/root \
+    PATH=/root/.local/bin:/root/.cargo/bin:/usr/local/bin:/usr/bin:/bin
+
+# Minimal toolchain deps — stable set that tauri-cli needs to compile. Kept in
+# its own layer so adding app-side apt packages later doesn't invalidate the
+# slow tauri-cli compile.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential pkg-config curl wget git ca-certificates libssl-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /root/.config/fish/conf.d \
+    && git config --global --add safe.directory /src
+
+WORKDIR /src
+
+RUN curl --retry 5 --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.87.0 --profile minimal \
+    && . "$HOME/.cargo/env" \
+    && rustup component add rustfmt clippy \
+    && rustup target add x86_64-unknown-linux-gnu
+
+RUN cargo install --version 1.6.2 --locked tauri-cli
+
+# App-side deps — added after tauri-cli so adding/removing packages here only
+# invalidates these layers, not the tauri-cli build.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        jq dpkg zsh zstd cmake clang unzip zip file \
+        libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libdbus-1-dev \
+        libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev valac libibus-1.0-dev \
+        libglib2.0-dev sqlite3 protobuf-compiler libfuse2 dpkg-sig \
+        python3 python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Pre-seed Tauri's cache with a modern linuxdeploy so its bundler's `wget -N`
+# sees a newer-timestamped local copy and skips re-downloading the stale
+# tauri-apps pin (whose bundled `strip` can't parse modern .relr.dyn ELFs).
+RUN mkdir -p /root/.cache/tauri \
+    && wget -q -O /root/.cache/tauri/linuxdeploy-x86_64.AppImage \
+        https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage \
+    && chmod +x /root/.cache/tauri/linuxdeploy-x86_64.AppImage \
+    && touch -d '2099-01-01' /root/.cache/tauri/linuxdeploy-x86_64.AppImage
+
+# Node 22 (package.json requires ^22.0.0). Installed from nodejs.org tarball
+# rather than apt (Ubuntu 22.04's default is node 12).
+ARG NODE_VERSION=22.19.0
+RUN wget -q https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz \
+    && mkdir -p /opt/node \
+    && tar -xf node-v${NODE_VERSION}-linux-x64.tar.xz --strip-components=1 -C /opt/node \
+    && rm node-v${NODE_VERSION}-linux-x64.tar.xz
+
+ENV PATH=/opt/node/bin:$PATH
+
+RUN npm install -g pnpm@10.0.0
+
+COPY build-scripts/requirements.txt /tmp/req.txt
+RUN pip3 install --user -r /tmp/req.txt
+
+ENV AMAZON_Q_BUILD_SKIP_FISH_TESTS=1 \
+    AMAZON_Q_BUILD_SKIP_SHELLCHECK_TESTS=1 \
+    GNOME_SHELL_BUILD_RELEASE=1 \
+    CI=true \
+    PATH=/opt/node/bin:/root/.local/bin:/root/.cargo/bin:/usr/local/bin:/usr/bin:/bin
+
+# Build runs as root (needs access to rustup/cargo tooling installed under /root).
+# After the build finishes, reclaim ownership of every file the container wrote
+# to the bind-mounted source tree so the host user isn't left with root-owned
+# artifacts (target/, build/, node_modules/, etc.). HOST_UID/HOST_GID are
+# supplied by docker-compose.build.yml.
+RUN set -eux; \
+    printf '%s\n' \
+        '#!/bin/sh' \
+        'set -e' \
+        'status=0' \
+        'python3 build-scripts/main.py build --skip-tests --skip-lints --variant full "$@" || status=$?' \
+        'if [ -n "${HOST_UID:-}" ] && [ -n "${HOST_GID:-}" ]; then' \
+        '    chown -R "$HOST_UID:$HOST_GID" /src 2>/dev/null || true' \
+        'fi' \
+        'exit $status' \
+    > /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

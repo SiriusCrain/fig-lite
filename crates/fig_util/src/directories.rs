@@ -508,7 +508,7 @@ pub fn appimage_desktop_entry_path<Ctx: EnvProvider>(ctx: &Ctx) -> Result<PathBu
     if !ctx.env().in_appimage() {
         return Err(DirectoryError::NotAppImage);
     }
-    Ok(ctx.env().current_dir()?.join("share/applications/q-desktop.desktop"))
+    Ok(ctx.env().current_dir()?.join("share/applications/amazon-q.desktop"))
 }
 
 /// The path to the icon bundled with the AppImage to be used for the desktop entry file.
@@ -521,7 +521,7 @@ pub fn appimage_desktop_entry_icon_path<Ctx: EnvProvider>(ctx: &Ctx) -> Result<P
     Ok(ctx
         .env()
         .current_dir()?
-        .join("share/icons/hicolor/128x128/apps/q-desktop.png"))
+        .join("share/icons/hicolor/128x128/apps/amazon-q.png"))
 }
 
 /// The path to the data directory auto-created by the Linux windowing application.
