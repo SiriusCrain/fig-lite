@@ -711,6 +711,7 @@ def build_linux_full(
     chat_path: pathlib.Path,
     npm_packages: NpmBuildOutput,
     features: Mapping[str, Sequence[str]] | None = None,
+    linux_packages: str = "all",
 ):
     target = get_target_triple()
 
@@ -773,60 +774,94 @@ def build_linux_full(
     if not release:
         cargo_tauri_args.extend(["--debug"])
 
-    info("Building", DESKTOP_PACKAGE_NAME)
-    run_cmd(
-        cargo_tauri_args,
-        cwd=DESKTOP_PACKAGE_PATH,
-        env={**os.environ, **rust_env(release=release, variant=Variant.FULL), "BUILD_DIR": BUILD_DIR},
-    )
-    desktop_path = pathlib.Path(f"target/{target}/{'release' if release else 'debug'}/{DESKTOP_BINARY_NAME}")
-
-    deb_resources = LinuxDebResources(
-        cli_path=cli_path,
-        pty_path=pty_path,
-        chat_path=chat_path,
-        desktop_path=desktop_path,
-        themes_path=themes_path,
-        legacy_extension_dir_path=legacy_extension_dir_path,
-        modern_extension_dir_path=modern_extension_dir_path,
-        bundle_metadata_path=make_linux_bundle_metadata(Package.DEB),
-        npm_packages=npm_packages,
-    )
-    deb_output = build_linux_deb(
-        resources=deb_resources,
-        control_path=pathlib.Path("bundle/deb/control"),
-        deb_suffix="",
-        release=release,
-    )
-
-    info("Copying AppImage to build directory")
-    # Determine architecture suffix based on the target triple
-    arch_suffix = "aarch64" if "aarch64" in target else "amd64"
-    info(f"Using architecture suffix: {arch_suffix} for target: {target}")
-
-    bundle_name = f"{tauri_product_name()}_{version()}_{arch_suffix}"
+    build_appimage = linux_packages in ("all", "appimage")
+    build_deb = linux_packages in ("all", "deb")
     target_subdir = "release" if release else "debug"
-    bundle_grandparent_path = f"target/{target}/{target_subdir}/bundle"
-    appimage_path = BUILD_DIR / f"{LINUX_PACKAGE_NAME}.appimage"
-    shutil.copy(
-        pathlib.Path(f"{bundle_grandparent_path}/appimage/{bundle_name}.AppImage"),
-        appimage_path,
-    )
-    generate_sha(appimage_path)
+
+    if build_appimage:
+        info("Building", DESKTOP_PACKAGE_NAME)
+        run_cmd(
+            cargo_tauri_args,
+            cwd=DESKTOP_PACKAGE_PATH,
+            env={**os.environ, **rust_env(release=release, variant=Variant.FULL), "BUILD_DIR": BUILD_DIR},
+        )
+        tauri_config_path.unlink(missing_ok=True)
+        # Tauri renames the cargo-built binary to productName during bundling.
+        desktop_path = pathlib.Path(f"target/{target}/{target_subdir}/{DESKTOP_BINARY_NAME}")
+    else:
+        tauri_config_path.unlink(missing_ok=True)
+        # Without tauri we only need the raw cargo binary for deb packaging.
+        info("Building", DESKTOP_PACKAGE_NAME, "(cargo only)")
+        cargo_build_args = [
+            cargo_cmd_name(),
+            "build",
+            "--locked",
+            "--package",
+            DESKTOP_PACKAGE_NAME,
+            "--target",
+            target,
+        ]
+        if release:
+            cargo_build_args.append("--release")
+        if features and features.get(DESKTOP_PACKAGE_NAME):
+            cargo_build_args.extend(["--features", ",".join(features[DESKTOP_PACKAGE_NAME])])
+        run_cmd(
+            cargo_build_args,
+            env={**os.environ, **rust_env(release=release, variant=Variant.FULL)},
+        )
+        desktop_path = pathlib.Path(f"target/{target}/{target_subdir}/{DESKTOP_PACKAGE_NAME}")
+
+    deb_output = None
+    if build_deb:
+        deb_resources = LinuxDebResources(
+            cli_path=cli_path,
+            pty_path=pty_path,
+            chat_path=chat_path,
+            desktop_path=desktop_path,
+            themes_path=themes_path,
+            legacy_extension_dir_path=legacy_extension_dir_path,
+            modern_extension_dir_path=modern_extension_dir_path,
+            bundle_metadata_path=make_linux_bundle_metadata(Package.DEB),
+            npm_packages=npm_packages,
+        )
+        deb_output = build_linux_deb(
+            resources=deb_resources,
+            control_path=pathlib.Path("bundle/deb/control"),
+            deb_suffix="",
+            release=release,
+        )
+
+    appimage_path = None
+    if build_appimage:
+        info("Copying AppImage to build directory")
+        # Determine architecture suffix based on the target triple
+        arch_suffix = "aarch64" if "aarch64" in target else "amd64"
+        info(f"Using architecture suffix: {arch_suffix} for target: {target}")
+
+        bundle_name = f"{tauri_product_name()}_{version()}_{arch_suffix}"
+        bundle_grandparent_path = f"target/{target}/{target_subdir}/bundle"
+        appimage_path = BUILD_DIR / f"{LINUX_PACKAGE_NAME}.appimage"
+        shutil.copy(
+            pathlib.Path(f"{bundle_grandparent_path}/appimage/{bundle_name}.AppImage"),
+            appimage_path,
+        )
+        generate_sha(appimage_path)
 
     signer = load_gpg_signer()
     if signer:
-        info("Signing AppImage")
-        signatures = signer.sign_file(appimage_path)
-        run_cmd(["gpg", "--verify", signatures[0], appimage_path], env=signer.gpg_env())
+        if appimage_path is not None:
+            info("Signing AppImage")
+            signatures = signer.sign_file(appimage_path)
+            run_cmd(["gpg", "--verify", signatures[0], appimage_path], env=signer.gpg_env())
 
-        info("Signing deb:", deb_output.deb_path)
-        run_cmd(["dpkg-sig", "-k", signer.gpg_id, "-s", "builder", deb_output.deb_path], env=signer.gpg_env())
-        run_cmd(["dpkg-sig", "-l", deb_output.deb_path], env=signer.gpg_env())
-        run_cmd(["gpg", "--verify", deb_output.deb_path], env=signer.gpg_env())
-        deb_output.sha_path = generate_sha(
-            deb_output.deb_path
-        )  # Need to regenerate the sha since the signature is embedded inside the deb
+        if deb_output is not None:
+            info("Signing deb:", deb_output.deb_path)
+            run_cmd(["dpkg-sig", "-k", signer.gpg_id, "-s", "builder", deb_output.deb_path], env=signer.gpg_env())
+            run_cmd(["dpkg-sig", "-l", deb_output.deb_path], env=signer.gpg_env())
+            run_cmd(["gpg", "--verify", deb_output.deb_path], env=signer.gpg_env())
+            deb_output.sha_path = generate_sha(
+                deb_output.deb_path
+            )  # Need to regenerate the sha since the signature is embedded inside the deb
 
         signer.clean()
 
@@ -868,6 +903,7 @@ def build(
     stage_name: str | None = None,
     run_lints: bool = True,
     run_test: bool = True,
+    linux_packages: str = "all",
 ) -> BuildOutput:
     variants = variants or get_variants()
 
@@ -982,6 +1018,7 @@ def build(
                     chat_path=chat_path,
                     npm_packages=npm_packages,
                     features=cargo_features,
+                    linux_packages=linux_packages,
                 )
                 build_output[variant] = BinaryPaths(cli_path=cli_path, pty_path=pty_path)
             else:

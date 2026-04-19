@@ -80,6 +80,12 @@ build_subparser.add_argument(
     help="Skip running lints",
 )
 build_subparser.add_argument("--variant", action=StoreIfNotEmptyAction, help="Variant to build for")
+build_subparser.add_argument(
+    "--linux-packages",
+    choices=["all", "deb", "appimage"],
+    default="all",
+    help="Which Linux desktop packages to produce (full variant only)",
+)
 
 test_subparser = subparsers.add_parser(name="test")
 test_subparser.add_argument(
@@ -133,6 +139,7 @@ match args.subparser:
             stage_name=args.stage_name,
             run_lints=not args.skip_lints,
             run_test=not args.skip_tests,
+            linux_packages=args.linux_packages,
         )
     case "test":
         all_tests(
