@@ -700,8 +700,38 @@ def build_linux_full(
     build_deb = linux_packages in ("all", "deb")
     target_subdir = "release" if release else "debug"
 
+    info("Building", DESKTOP_PACKAGE_NAME, "(cargo)")
+    cargo_build_args = [
+        cargo_cmd_name(),
+        "build",
+        "--locked",
+        "--package",
+        DESKTOP_PACKAGE_NAME,
+        "--target",
+        target,
+    ]
+    if release:
+        cargo_build_args.append("--release")
+    if features and features.get(DESKTOP_PACKAGE_NAME):
+        cargo_build_args.extend(["--features", ",".join(features[DESKTOP_PACKAGE_NAME])])
+    run_cmd(
+        cargo_build_args,
+        env={**os.environ, **rust_env(release=release, variant=Variant.FULL)},
+    )
+    cargo_desktop_path = pathlib.Path(f"target/{target}/{target_subdir}/{DESKTOP_PACKAGE_NAME}")
+
+    skip_tauri_bundle = False
     if build_appimage:
-        info("Building", DESKTOP_PACKAGE_NAME)
+        final_appimage = BUILD_DIR / f"{LINUX_PACKAGE_NAME}.appimage"
+        if (
+            final_appimage.exists()
+            and cargo_desktop_path.exists()
+            and final_appimage.stat().st_mtime >= cargo_desktop_path.stat().st_mtime
+        ):
+            skip_tauri_bundle = True
+
+    if build_appimage and not skip_tauri_bundle:
+        info("Bundling AppImage via tauri")
         run_cmd(
             cargo_tauri_args,
             cwd=DESKTOP_PACKAGE_PATH,
@@ -712,26 +742,9 @@ def build_linux_full(
         desktop_path = pathlib.Path(f"target/{target}/{target_subdir}/{DESKTOP_BINARY_NAME}")
     else:
         tauri_config_path.unlink(missing_ok=True)
-        # Without tauri we only need the raw cargo binary for deb packaging.
-        info("Building", DESKTOP_PACKAGE_NAME, "(cargo only)")
-        cargo_build_args = [
-            cargo_cmd_name(),
-            "build",
-            "--locked",
-            "--package",
-            DESKTOP_PACKAGE_NAME,
-            "--target",
-            target,
-        ]
-        if release:
-            cargo_build_args.append("--release")
-        if features and features.get(DESKTOP_PACKAGE_NAME):
-            cargo_build_args.extend(["--features", ",".join(features[DESKTOP_PACKAGE_NAME])])
-        run_cmd(
-            cargo_build_args,
-            env={**os.environ, **rust_env(release=release, variant=Variant.FULL)},
-        )
-        desktop_path = pathlib.Path(f"target/{target}/{target_subdir}/{DESKTOP_PACKAGE_NAME}")
+        if skip_tauri_bundle:
+            info("AppImage up-to-date, skipping tauri bundling")
+        desktop_path = cargo_desktop_path
 
     deb_output = None
     if build_deb:
@@ -754,19 +767,21 @@ def build_linux_full(
 
     appimage_path = None
     if build_appimage:
-        info("Copying AppImage to build directory")
-        # Determine architecture suffix based on the target triple
-        arch_suffix = "aarch64" if "aarch64" in target else "amd64"
-        info(f"Using architecture suffix: {arch_suffix} for target: {target}")
-
-        bundle_name = f"{tauri_product_name()}_{version()}_{arch_suffix}"
-        bundle_grandparent_path = f"target/{target}/{target_subdir}/bundle"
         appimage_path = BUILD_DIR / f"{LINUX_PACKAGE_NAME}.appimage"
-        shutil.copy(
-            pathlib.Path(f"{bundle_grandparent_path}/appimage/{bundle_name}.AppImage"),
-            appimage_path,
-        )
-        generate_sha(appimage_path)
+        if skip_tauri_bundle:
+            info("Reusing existing AppImage:", appimage_path)
+        else:
+            info("Copying AppImage to build directory")
+            arch_suffix = "aarch64" if "aarch64" in target else "amd64"
+            info(f"Using architecture suffix: {arch_suffix} for target: {target}")
+
+            bundle_name = f"{tauri_product_name()}_{version()}_{arch_suffix}"
+            bundle_grandparent_path = f"target/{target}/{target_subdir}/bundle"
+            shutil.copy(
+                pathlib.Path(f"{bundle_grandparent_path}/appimage/{bundle_name}.AppImage"),
+                appimage_path,
+            )
+            generate_sha(appimage_path)
 
     signer = load_gpg_signer()
     if signer:

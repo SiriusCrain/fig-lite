@@ -23,7 +23,11 @@ def build_hash() -> str:
 
 @cache
 def build_datetime() -> str:
-    build_time = datetime.now(timezone.utc).isoformat()
+    try:
+        build_time = run_cmd_output(["git", "show", "-s", "--format=%cI", "HEAD"]).strip()
+    except Exception as e:
+        warn("Failed to get git commit datetime, falling back to now():", e)
+        build_time = datetime.now(timezone.utc).isoformat()
     info("build_time =", build_time)
     return build_time
 
