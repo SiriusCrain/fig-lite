@@ -68,6 +68,7 @@ use fig_proto::remote_hooks::{
 use fig_settings::state;
 use fig_util::consts::CLI_BINARY_NAME;
 use fig_util::env_var::{
+    PROCESS_LAUNCHED_BY_Q,
     Q_LOG_LEVEL,
     Q_SHELL,
     Q_TERM,
@@ -175,11 +176,25 @@ pub enum MainLoopEvent {
     UnsetCsiU,
 }
 
+static TERMINAL_PID: LazyLock<Option<i32>> = LazyLock::new(|| {
+    #[cfg(unix)]
+    {
+        // figterm was exec'd from the shell, so its own parent is the terminal
+        // emulator process.
+        Some(nix::unistd::getppid().as_raw())
+    }
+    #[cfg(not(unix))]
+    {
+        None
+    }
+});
+
 fn shell_state_to_context(shell_state: &ShellState) -> local::ShellContext {
     let terminal = FigTerminal::parent_terminal(&Context::new()).map(|s| s.to_string());
 
     local::ShellContext {
         pid: shell_state.local_context.pid,
+        terminal_pid: *TERMINAL_PID,
         ttys: shell_state.local_context.tty.clone(),
         process_name: shell_state.local_context.shell.clone(),
         shell_path: shell_state
@@ -209,7 +224,14 @@ fn shell_state_to_context(shell_state: &ShellState) -> local::ShellContext {
 }
 
 #[allow(clippy::needless_return)]
-fn get_cursor_coordinates(terminal: &dyn Terminal) -> Option<TerminalCursorCoordinates> {
+fn get_cursor_coordinates<T>(
+    terminal: &mut dyn Terminal,
+    #[cfg(not(target_os = "windows"))] term: &Term<T>,
+    #[cfg(target_os = "windows")] _term: &Term<T>,
+) -> Option<TerminalCursorCoordinates>
+where
+    T: alacritty_terminal::event::EventListener,
+{
     cfg_if! {
         if #[cfg(target_os = "windows")] {
             use term::cast;
@@ -221,10 +243,40 @@ fn get_cursor_coordinates(terminal: &dyn Terminal) -> Option<TerminalCursorCoord
                 y: cast(coordinate.rows).ok()?,
                 xpixel: cast(screen_size.xpixel).ok()?,
                 ypixel: cast(screen_size.ypixel).ok()?,
+                cols: cast(screen_size.cols).ok()?,
+                rows: cast(screen_size.rows).ok()?,
             });
         } else {
-            let _terminal = terminal;
-            return None;
+            // Linux: derive caret cell coords from alacritty Term grid, and cell
+            // pixel size from TIOCGWINSZ (ws_xpixel/ypixel divided by cols/rows).
+            let screen = terminal.get_screen_size().ok()?;
+            if screen.cols == 0 || screen.rows == 0 {
+                return None;
+            }
+            // Many Linux terminals (ghostty, gnome-terminal) don't populate
+            // ws_xpixel/ws_ypixel. Fall back to conservative defaults so the
+            // popup anchors near the caret rather than at the window origin.
+            let cell_w: i32 = if screen.xpixel > 0 {
+                (screen.xpixel / screen.cols) as i32
+            } else {
+                9
+            };
+            let cell_h: i32 = if screen.ypixel > 0 {
+                (screen.ypixel / screen.rows) as i32
+            } else {
+                18
+            };
+            let point = term.grid().cursor.point;
+            let x = point.column.0 as i32;
+            let y = point.line.0 as i32;
+            return Some(TerminalCursorCoordinates {
+                x,
+                y,
+                xpixel: cell_w,
+                ypixel: cell_h,
+                cols: screen.cols as i32,
+                rows: screen.rows as i32,
+            });
         }
     }
 }
@@ -432,6 +484,7 @@ fn build_shell_command(command: Option<&[String]>) -> Result<CommandBuilder> {
     };
 
     builder.env(Q_TERM, env!("CARGO_PKG_VERSION"));
+    builder.env(PROCESS_LAUNCHED_BY_Q, "1");
     if env::var_os("TMUX").is_some() {
         builder.env("Q_TERM_TMUX", env!("CARGO_PKG_VERSION"));
     }
@@ -877,7 +930,7 @@ fn figterm_main(command: Option<&[String]>) -> Result<()> {
                             }
 
                             if can_send_edit_buffer(&term) {
-                                let cursor_coordinates = get_cursor_coordinates(&terminal);
+                                let cursor_coordinates = get_cursor_coordinates(&mut terminal, &term);
                                 if let Err(err) = send_edit_buffer(&term, &remote_sender, cursor_coordinates).await {
                                     warn!("Failed to send edit buffer: {err}");
                                 }
@@ -935,7 +988,7 @@ fn figterm_main(command: Option<&[String]>) -> Result<()> {
                 _ = edit_buffer_interval.tick() => {
                     let send_eb = INSERTION_LOCKED_AT.read().unwrap().is_some();
                     if send_eb && can_send_edit_buffer(&term) {
-                        let cursor_coordinates = get_cursor_coordinates(&terminal);
+                        let cursor_coordinates = get_cursor_coordinates(&mut terminal, &term);
                         if let Err(err) = send_edit_buffer(&term, &remote_sender, cursor_coordinates).await {
                             warn!(%err, "Failed to send edit buffer");
                         }

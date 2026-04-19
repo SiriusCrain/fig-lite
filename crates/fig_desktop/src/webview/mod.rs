@@ -285,6 +285,7 @@ impl WebviewManager {
             RemoteHook {
                 notifications_state: self.notifications_state.clone(),
                 proxy: self.event_loop.create_proxy(),
+                platform_state: self.platform_state.clone(),
             },
         ));
 

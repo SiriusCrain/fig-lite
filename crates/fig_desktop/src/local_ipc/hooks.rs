@@ -67,13 +67,14 @@ pub async fn file_changed(_file_changed_hook: FileChangedHook) -> Result<()> {
 pub async fn focused_window_data(
     hook: FocusedWindowDataHook,
     platform_state: &PlatformState,
+    figterm_state: &fig_remote_ipc::figterm::FigtermState,
     proxy: &EventLoopProxy,
 ) -> Result<()> {
     #[cfg(target_os = "linux")]
-    return crate::platform::integrations::from_hook(hook, platform_state, proxy);
+    return crate::platform::integrations::from_hook(hook, platform_state, figterm_state, proxy);
     #[cfg(not(target_os = "linux"))]
     {
-        let (_hook, _platform_state, _proxy) = (hook, platform_state, proxy);
+        let (_hook, _platform_state, _figterm_state, _proxy) = (hook, platform_state, figterm_state, proxy);
         Ok(())
     }
 }

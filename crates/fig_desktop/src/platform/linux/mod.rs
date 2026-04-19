@@ -75,6 +75,7 @@ pub(super) struct ActiveWindowData {
     outer_width: i32,
     outer_height: i32,
     scale: f32,
+    pub pid: Option<i32>,
 }
 
 impl From<ActiveWindowData> for Rect {
@@ -114,6 +115,20 @@ pub struct PlatformStateImpl {
     pub(super) active_terminal: Mutex<Option<Terminal>>,
 
     pub(super) ibus_connected: AtomicBool,
+
+    /// Last cursor coordinates received from figterm (grid x/y, cell x/ypixel, cols/rows).
+    /// Used so a fresh GSE focus hook can re-emit caret-relative positioning without
+    /// requiring a new keystroke.
+    #[serde(skip)]
+    pub(super) last_cursor_coords: Mutex<Option<(i32, i32, i32, i32, i32, i32)>>,
+
+    /// When focus moves to a different terminal pid, this is armed with
+    /// `(new_pid, None)`. The first edit_buffer from that pid captures its
+    /// text as the baseline → `(pid, Some(text))`. While armed, the popup is
+    /// suppressed; it releases only when an edit_buffer from the same pid
+    /// carries different text (user typed in the newly focused terminal).
+    #[serde(skip)]
+    pub(super) focus_change_suppress: Mutex<Option<(i32, Option<String>)>>,
 }
 
 impl PlatformStateImpl {
@@ -124,6 +139,8 @@ impl PlatformStateImpl {
             display_server_state: Mutex::new(None),
             active_terminal: Mutex::new(None),
             ibus_connected: AtomicBool::new(false),
+            last_cursor_coords: Mutex::new(None),
+            focus_change_suppress: Mutex::new(None),
         }
     }
 
@@ -259,8 +276,151 @@ impl PlatformStateImpl {
         None
     }
 
+    /// Returns true if a recognized terminal is currently focused on Linux.
+    pub fn has_active_terminal(&self) -> bool {
+        self.active_terminal.lock().is_some()
+    }
+
+    /// Returns the PID of the focused window reported by the GNOME extension,
+    /// if any. Used to match edit-buffer events to the focused window.
+    pub fn active_window_pid(&self) -> Option<i32> {
+        self.active_window_data.lock().and_then(|w| w.pid)
+    }
+
+    /// Arms focus-change suppression for `new_pid` if it differs from any
+    /// currently-armed pid. Called from GSE focus hook handling on every
+    /// focus event; it is a no-op when the new pid matches the already-armed
+    /// one (e.g. a size-changed event on the same window).
+    ///
+    /// If `baseline` is provided, it is captured directly (so the very first
+    /// char the user types will diverge and release suppression). If `None`,
+    /// the baseline is captured from the first edit_buffer event matching the
+    /// pid — which costs one keystroke before the popup can reappear.
+    pub fn arm_focus_change_suppress(&self, new_pid: i32, baseline: Option<String>) {
+        let mut guard = self.focus_change_suppress.lock();
+        let already_armed_for_same = matches!(&*guard, Some((pid, _)) if *pid == new_pid);
+        if !already_armed_for_same {
+            *guard = Some((new_pid, baseline));
+        }
+    }
+
+    /// Clears any armed suppression. Used when focus leaves a recognized
+    /// terminal entirely (so re-focusing a terminal later doesn't inherit a
+    /// stale suppression).
+    pub fn clear_focus_change_suppress(&self) {
+        *self.focus_change_suppress.lock() = None;
+    }
+
+    /// Returns true if the popup should be suppressed for this edit_buffer
+    /// event. Side-effects:
+    ///  - On the first matching edit_buffer after arming, captures `text` as the baseline (returns
+    ///    `true`).
+    ///  - On subsequent matching events where `text` differs from the baseline (user typed), clears
+    ///    suppression and returns `false`.
+    ///  - Returns `false` if not armed, or if the armed pid doesn't match.
+    pub fn check_focus_change_suppress(&self, pid: Option<i32>, text: &str) -> bool {
+        let mut guard = self.focus_change_suppress.lock();
+        match &*guard {
+            Some((armed_pid, None)) if pid == Some(*armed_pid) => {
+                *guard = Some((*armed_pid, Some(text.to_string())));
+                true
+            },
+            Some((armed_pid, Some(baseline))) if pid == Some(*armed_pid) => {
+                if baseline == text {
+                    true
+                } else {
+                    *guard = None;
+                    false
+                }
+            },
+            _ => false,
+        }
+    }
+
+    /// Returns the inner (content area) origin of the active window, for caret positioning
+    /// on Linux where the GNOME extension reports both inner and outer bounds.
+    pub fn get_active_window_inner_origin(&self) -> Option<(i32, i32, i32, i32)> {
+        let dss = self.display_server_state.lock();
+        if !matches!(&*dss, Some(DisplayServerState::Mutter)) {
+            return None;
+        }
+        self.active_window_data
+            .lock()
+            .map(|w| (w.inner_x, w.inner_y, w.inner_width, w.inner_height))
+    }
+
+    /// Record the latest cursor coordinates from figterm. Used so a GSE focus hook
+    /// can re-emit caret position without needing a fresh keystroke.
+    pub fn set_last_cursor_coords(&self, coords: (i32, i32, i32, i32, i32, i32)) {
+        *self.last_cursor_coords.lock() = Some(coords);
+    }
+
+    /// If we have a valid active window (from GSE) and a recent cursor position
+    /// from figterm, emit an UpdateWindowGeometry event with the computed pixel
+    /// caret position. Returns true if an event was sent.
+    pub fn emit_caret_from_last_coords(&self, proxy: &EventLoopProxy) -> bool {
+        use fig_proto::local::caret_position_hook::Origin;
+        use tao::dpi::{
+            LogicalPosition,
+            LogicalSize,
+        };
+
+        use crate::AUTOCOMPLETE_ID;
+        use crate::event::{
+            Event,
+            WindowEvent,
+            WindowPosition,
+        };
+
+        let inner = match self.get_active_window_inner_origin() {
+            Some(v) => v,
+            None => return false,
+        };
+        let coords = match *self.last_cursor_coords.lock() {
+            Some(v) => v,
+            None => return false,
+        };
+        let (cx, cy, xpixel, ypixel, cols, rows) = coords;
+        let (inner_x, inner_y, inner_w, inner_h) = inner;
+
+        let cell_w = if cols > 0 {
+            inner_w as f64 / cols as f64
+        } else {
+            xpixel as f64
+        };
+        let cell_h = if rows > 0 {
+            inner_h as f64 / rows as f64
+        } else {
+            ypixel as f64
+        };
+        if cell_w <= 0.0 || cell_h <= 0.0 {
+            return false;
+        }
+        let caret_x = inner_x as f64 + cx as f64 * cell_w;
+        let caret_y = inner_y as f64 + cy as f64 * cell_h;
+
+        proxy
+            .send_event(Event::WindowEvent {
+                window_id: AUTOCOMPLETE_ID,
+                window_event: WindowEvent::UpdateWindowGeometry {
+                    position: Some(WindowPosition::RelativeToCaret {
+                        caret_position: LogicalPosition::new(caret_x, caret_y).into(),
+                        caret_size: LogicalSize::new(cell_w, cell_h).into(),
+                        origin: Origin::TopLeft,
+                    }),
+                    size: None,
+                    anchor: None,
+                    tx: None,
+                    dry_run: false,
+                },
+            })
+            .ok();
+        true
+    }
+
     pub(super) fn get_active_window(&self) -> Option<super::PlatformWindow> {
-        match &*self.display_server_state.lock() {
+        let dss = self.display_server_state.lock();
+        match &*dss {
             Some(DisplayServerState::X11(x11_state)) => x11_state.active_window.lock().as_ref().and_then(|window| {
                 window.window_geometry.map(|rect| super::PlatformWindow {
                     rect,

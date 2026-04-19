@@ -69,6 +69,9 @@ message ShellContext {
   optional bool osc_lock = 16;
   // the raw output of `alias` run in the shell
   optional string alias = 17;
+  // PID of the terminal emulator window figterm is running inside (Linux only).
+  // Used to match edit-buffer events to the focused terminal window.
+  optional int32 terminal_pid = 18;
 }
 
 message FileData {

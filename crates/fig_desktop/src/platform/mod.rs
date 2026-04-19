@@ -87,6 +87,43 @@ impl PlatformState {
         self.0.get_active_window()
     }
 
+    /// Gets the inner content-area origin and size of the active terminal window on Linux.
+    /// Returns (x, y, width, height) in the same unit space used by the platform.
+    #[cfg(target_os = "linux")]
+    pub fn get_active_window_inner_origin(&self) -> Option<(i32, i32, i32, i32)> {
+        self.0.get_active_window_inner_origin()
+    }
+
+    /// Returns true if a recognized terminal is currently focused on Linux.
+    #[cfg(target_os = "linux")]
+    pub fn has_active_terminal(&self) -> bool {
+        self.0.has_active_terminal()
+    }
+
+    /// Returns the PID of the focused window reported by the GNOME extension, if any.
+    #[cfg(target_os = "linux")]
+    pub fn active_window_pid(&self) -> Option<i32> {
+        self.0.active_window_pid()
+    }
+
+    #[cfg(target_os = "linux")]
+    pub fn check_focus_change_suppress(&self, pid: Option<i32>, text: &str) -> bool {
+        self.0.check_focus_change_suppress(pid, text)
+    }
+
+    /// Record the latest cursor coordinates from figterm (Linux only).
+    #[cfg(target_os = "linux")]
+    pub fn set_last_cursor_coords(&self, coords: (i32, i32, i32, i32, i32, i32)) {
+        self.0.set_last_cursor_coords(coords);
+    }
+
+    /// If coords + active window are both known, emit an UpdateWindowGeometry event that
+    /// places the autocomplete popup relative to the caret. Returns true if emitted.
+    #[cfg(target_os = "linux")]
+    pub fn emit_caret_from_last_coords(&self, proxy: &EventLoopProxy) -> bool {
+        self.0.emit_caret_from_last_coords(proxy)
+    }
+
     /// Looks up icons by name on the platform
     pub async fn icon_lookup(name: &AssetSpecifier<'_>) -> Option<ProcessedAsset> {
         PlatformStateImpl::icon_lookup(name).await

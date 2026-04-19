@@ -7,6 +7,7 @@ use anyhow::{
     anyhow,
 };
 use fig_proto::local::FocusedWindowDataHook;
+use fig_remote_ipc::figterm::FigtermState;
 use fig_util::Terminal;
 use tracing::debug;
 
@@ -47,6 +48,9 @@ pub static GSE_ALLOWLIST: LazyLock<HashMap<&'static str, Terminal>> = LazyLock::
             }
         }
     }
+    // Modern Wayland app_ids (reverse-DNS) that differ from the legacy X11 WM_CLASS.
+    allowlist.insert("org.gnome.Terminal", Terminal::GnomeTerminal);
+    allowlist.insert("org.gnome.Console", Terminal::GnomeConsole);
     allowlist
 });
 
@@ -58,7 +62,12 @@ fn from_source(from: &str) -> Option<&HashMap<&'static str, Terminal>> {
     }
 }
 
-pub fn from_hook(hook: FocusedWindowDataHook, platform_state: &PlatformState, proxy: &EventLoopProxy) -> Result<()> {
+pub fn from_hook(
+    hook: FocusedWindowDataHook,
+    platform_state: &PlatformState,
+    figterm_state: &FigtermState,
+    proxy: &EventLoopProxy,
+) -> Result<()> {
     debug!("Received FocusedWindowDataHook: {:?}", hook);
     WM_REVICED_DATA.store(true, Ordering::Relaxed);
 
@@ -75,6 +84,7 @@ pub fn from_hook(hook: FocusedWindowDataHook, platform_state: &PlatformState, pr
         .ok_or_else(|| anyhow!("received invalid focus window data source"))?
         .get(hook.id.as_str())
     {
+        let previous_pid = platform_state.0.active_window_data.lock().and_then(|w| w.pid);
         *platform_state.0.active_terminal.lock() = Some(terminal.clone());
         let inner = hook.inner.unwrap();
         let outer = hook.outer.unwrap();
@@ -89,9 +99,39 @@ pub fn from_hook(hook: FocusedWindowDataHook, platform_state: &PlatformState, pr
             outer_width: outer.width,
             outer_height: outer.height,
             scale: hook.scale,
+            pid: hook.pid,
         });
+        drop(handle);
+
+        // Focus moved to a recognized terminal. If the focused pid changed from
+        // the previous focus, arm suppression so the popup stays hidden until
+        // the user actively types in this newly focused terminal.
+        if let Some(new_pid) = hook.pid {
+            if previous_pid != Some(new_pid) {
+                // Seed the suppression baseline with the text currently in
+                // figterm for this pid, so the very first keystroke releases
+                // the popup instead of being consumed as the baseline.
+                let baseline = {
+                    let inner = figterm_state.inner.lock();
+                    inner
+                        .linked_sessions
+                        .values()
+                        .find(|s| {
+                            s.dead_since.is_none() && s.context.as_ref().and_then(|c| c.terminal_pid) == Some(new_pid)
+                        })
+                        .map(|s| s.edit_buffer.text.clone())
+                };
+                platform_state.0.arm_focus_change_suppress(new_pid, baseline);
+                proxy.send_event(Event::WindowEvent {
+                    window_id: AUTOCOMPLETE_ID,
+                    window_event: WindowEvent::Hide,
+                })?;
+            }
+        }
     } else {
         *platform_state.0.active_terminal.lock() = None;
+        *platform_state.0.active_window_data.lock() = None;
+        platform_state.0.clear_focus_change_suppress();
         proxy.send_event(Event::WindowEvent {
             window_id: AUTOCOMPLETE_ID,
             window_event: WindowEvent::Hide,

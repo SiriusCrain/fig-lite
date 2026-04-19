@@ -307,7 +307,7 @@ async fn handle_local_ipc<Ctx>(
                     Some(FocusChange(_)) => hooks::focus_change(&proxy).await,
                     Some(FileChanged(request)) => hooks::file_changed(request).await,
                     Some(FocusedWindowData(request)) => {
-                        hooks::focused_window_data(request, &platform_state, &proxy).await
+                        hooks::focused_window_data(request, &platform_state, &figterm_state, &proxy).await
                     },
                     Some(KeyboardFocusChanged(_)) => hooks::focus_change(&proxy).await,
                     Some(Event(event)) => hooks::event(event, &proxy).await,

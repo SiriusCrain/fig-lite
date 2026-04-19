@@ -184,6 +184,11 @@ message TerminalCursorCoordinates {
   int32 y = 2;
   int32 xpixel = 3;
   int32 ypixel = 4;
+  // Total grid dimensions reported by the terminal. These let the desktop app
+  // derive accurate cell size by dividing the outer terminal window's inner
+  // width/height by cols/rows when xpixel/ypixel from TIOCGWINSZ are 0.
+  int32 cols = 5;
+  int32 rows = 6;
 }
 
 message EditBufferHook {
@@ -304,6 +309,11 @@ message FocusedWindowDataHook {
   BoundingBox outer = 4;
   optional bool hide = 5;
   float scale = 6;
+  // PID of the focused window's process (Wayland/Linux only, via GNOME extension).
+  // Used to match the focused terminal window to its figterm session so the popup
+  // doesn't show for the wrong window when multiple windows of the same emulator
+  // are open.
+  optional int32 pid = 7;
 }
 
 message ClearAutocompleteCacheHook {

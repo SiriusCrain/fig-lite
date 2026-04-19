@@ -708,6 +708,7 @@ export default class QCliExtension extends Extension {
     // https://mutter.gnome.org/meta/method.Window.get_buffer_rect.html
     const outer_rect = this.#window.get_buffer_rect();
     const scale = global.display.get_monitor_scale(this.#window.get_monitor());
+    const pid = this.#window.get_pid();
 
     debug(
       `Sending data for rect inner ${inner_rect.x},${inner_rect.y},${inner_rect.width},${inner_rect.height}` +
@@ -733,6 +734,7 @@ export default class QCliExtension extends Extension {
           },
           hide: overlay_pressed,
           scale,
+          pid,
         }),
         null,
       );

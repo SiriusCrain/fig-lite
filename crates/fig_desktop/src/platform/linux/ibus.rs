@@ -80,10 +80,15 @@ pub async fn launch_ibus_connection(proxy: EventLoopProxy, platform_state: Arc<P
                                     active_input_contexts.remove(path.as_str());
                                 },
                                 "SetCursorLocation" => {
-                                    if !active_input_contexts.contains(path.as_str())
-                                        || platform_state.active_terminal.lock().is_none()
-                                    {
-                                        debug!("SetCursorLocation rejected on {}", path.as_str());
+                                    let has_ctx = active_input_contexts.contains(path.as_str());
+                                    let has_term = platform_state.active_terminal.lock().is_some();
+                                    if !has_ctx || !has_term {
+                                        debug!(
+                                            "SetCursorLocation rejected on {} (has_ctx={}, has_term={})",
+                                            path.as_str(),
+                                            has_ctx,
+                                            has_term
+                                        );
                                         continue;
                                     }
 

@@ -53,6 +53,7 @@ use crate::{
 pub struct RemoteHook {
     pub notifications_state: Arc<WebviewNotificationsState>,
     pub proxy: EventLoopProxy,
+    pub platform_state: Arc<crate::platform::PlatformState>,
 }
 
 #[async_trait::async_trait]
@@ -140,10 +141,88 @@ impl fig_remote_ipc::RemoteHookHandler for RemoteHook {
                 .send_event(Event::PlatformBoundEvent(PlatformBoundEvent::EditBufferChanged))?;
         }
 
+        // Only process caret / show for the figterm whose parent terminal window
+        // is currently focused. Matches figterm's reported terminal_pid against
+        // the PID reported by the GNOME Shell extension for the focused window.
+        #[cfg(target_os = "linux")]
+        let session_is_focused = {
+            let fig_pid = hook.context.as_ref().and_then(|c| c.terminal_pid);
+            let win_pid = self.platform_state.active_window_pid();
+            let has_term = self.platform_state.has_active_terminal();
+            has_term
+                && match (fig_pid, win_pid) {
+                    (Some(f), Some(w)) => f == w,
+                    _ => true,
+                }
+        };
+
+        // If focus has just moved to this terminal, suppress the popup until
+        // its edit-buffer text actually changes (user typed here). The first
+        // matching edit_buffer captures the baseline text; subsequent ones
+        // release only when the text diverges.
+        #[cfg(target_os = "linux")]
+        let focus_change_suppressed = {
+            let fig_pid = hook.context.as_ref().and_then(|c| c.terminal_pid);
+            self.platform_state.check_focus_change_suppress(fig_pid, &hook.text)
+        };
+
+        // Compute pixel caret position on Linux from terminal_cursor_coordinates + active
+        // terminal window inner bounds, and emit a RelativeToCaret update. This is the
+        // fallback path for terminals that don't emit IBus SetCursorLocation.
+        #[cfg(target_os = "linux")]
+        if let (true, Some(coords), Some((inner_x, inner_y, inner_w, inner_h))) = (
+            session_is_focused && !focus_change_suppressed,
+            hook.terminal_cursor_coordinates.as_ref(),
+            self.platform_state.get_active_window_inner_origin(),
+        ) {
+            // Prefer deriving cell size from inner window pixel dims / grid dims,
+            // since most Linux terminals (ghostty, gnome-terminal) leave TIOCGWINSZ
+            // ws_xpixel/ws_ypixel as 0. Fall back to the xpixel/ypixel figterm sent.
+            let cell_w = if coords.cols > 0 {
+                inner_w as f64 / coords.cols as f64
+            } else {
+                coords.xpixel as f64
+            };
+            let cell_h = if coords.rows > 0 {
+                inner_h as f64 / coords.rows as f64
+            } else {
+                coords.ypixel as f64
+            };
+            if cell_w > 0.0 && cell_h > 0.0 {
+                use tao::dpi::{
+                    LogicalPosition,
+                    LogicalSize,
+                };
+                let caret_x = inner_x as f64 + (coords.x as f64) * cell_w;
+                let caret_y = inner_y as f64 + (coords.y as f64) * cell_h;
+                self.proxy
+                    .send_event(Event::WindowEvent {
+                        window_id: AUTOCOMPLETE_ID,
+                        window_event: WindowEvent::UpdateWindowGeometry {
+                            position: Some(crate::event::WindowPosition::RelativeToCaret {
+                                caret_position: LogicalPosition::new(caret_x, caret_y).into(),
+                                caret_size: LogicalSize::new(cell_w, cell_h).into(),
+                                origin: fig_proto::local::caret_position_hook::Origin::TopLeft,
+                            }),
+                            size: None,
+                            anchor: None,
+                            tx: None,
+                            dry_run: false,
+                        },
+                    })
+                    .ok();
+            }
+        }
+
+        // Hide the popup if the edit buffer is empty, the event is from a
+        // non-focused session, or we're still suppressing after a focus change.
+        #[cfg(target_os = "linux")]
+        let should_hide = empty_edit_buffer || !session_is_focused || focus_change_suppressed;
+        #[cfg(not(target_os = "linux"))]
+        let should_hide = empty_edit_buffer;
         self.proxy.send_event(Event::WindowEvent {
             window_id: AUTOCOMPLETE_ID,
-            // If editbuffer is empty, hide the autocomplete window to avoid flickering
-            window_event: if empty_edit_buffer {
+            window_event: if should_hide {
                 WindowEvent::Hide
             } else {
                 WindowEvent::Show
