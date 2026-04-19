@@ -686,7 +686,12 @@ pub fn build_dashboard(
         use gtk::traits::GtkWindowExt;
         use tao::platform::unix::WindowExtUnix;
 
-        window.gtk_window().set_role("dashboard");
+        let gtk_window = window.gtk_window();
+        gtk_window.set_role("dashboard");
+        // Re-center the dashboard each time it is mapped (first launch + every
+        // re-show from the tray). `Center` alone only applies on initial map;
+        // `CenterAlways` also centers on every subsequent show after a hide.
+        gtk_window.set_position(gtk::WindowPosition::CenterAlways);
     }
 
     let proxy = event_loop.create_proxy();
