@@ -46,8 +46,6 @@ export enum SETTINGS {
   HISTORY_CTRL_R_TOGGLE = "beta.history.ctrl-r",
 
   FIRST_COMMAND_COMPLETION = "autocomplete.firstTokenCompletion",
-
-  TELEMETRY_ENABLED = "telemetry.enabled",
 }
 
 export type SettingsMap = { [key in SETTINGS]?: unknown };

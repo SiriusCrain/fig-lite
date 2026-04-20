@@ -10,14 +10,13 @@ import Keybindings from "./pages/settings/keybindings";
 import Licenses from "./pages/licenses";
 import { Suspense, useContext, useEffect, useRef } from "react";
 import Modal from "./components/modal";
-import { Telemetry, Event } from "@aws/amazon-q-developer-cli-api-bindings";
+import { Event } from "@aws/amazon-q-developer-cli-api-bindings";
 import InstallModal from "./components/installs/modal";
 import LoginModal from "./components/installs/modal/login";
 import { getIconFromName } from "./lib/icons";
 import { StoreContext } from "./context/zustand";
 import { createStore } from "./lib/store";
 import ListenerContext from "./context/input";
-import { useLocation } from "react-router-dom";
 import {
   useAccessibilityCheck,
   useDotfilesCheck,
@@ -89,16 +88,7 @@ function ActiveModal() {
 
 function Router() {
   const navigate = useNavigate();
-  const location = useLocation();
   const platformInfo = usePlatformInfo();
-
-  useEffect(() => {
-    try {
-      Telemetry.page("", location.pathname, { ...location });
-    } catch (e) {
-      console.error(e);
-    }
-  }, [location]);
 
   useEffect(() => {
     let unsubscribe: () => void;

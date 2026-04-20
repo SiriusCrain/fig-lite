@@ -1,7 +1,6 @@
 import logger from "loglevel";
 import { StoreApi } from "zustand";
 import { Shell } from "@aws/amazon-q-developer-cli-api-bindings";
-import { SpecLocationSource } from "@fig/autocomplete-shared";
 import {
   SpecLocation,
   Suggestion,
@@ -12,7 +11,6 @@ import {
   ensureTrailingSlash,
 } from "@aws/amazon-q-developer-cli-shared/utils";
 import { SETTINGS } from "@aws/amazon-q-developer-cli-api-bindings-wrappers";
-import { trackEvent } from "../telemetry";
 import { NamedSetState, AutocompleteState, Visibility } from "./types";
 import {
   isMatchingType,
@@ -122,27 +120,6 @@ const insertString = (
     const suggestionName = makeArray(item.name)[0] || "";
     updateAutocompleteIndexFromUserInsert(rootCommand, suggestionName);
   }
-
-  const metadata: Record<string, string | boolean> | null = specLocation
-    ? {
-        specName: specLocation.name,
-        specLocation: specLocation.location.name,
-        specLocationType: specLocation.location.type,
-        spec_is_script: specLocation.location.type === SpecLocationSource.LOCAL,
-      }
-    : null;
-
-  trackEvent("autocomplete-insert", {
-    ...metadata,
-    rootCommand,
-    suggestion_type: item.type ?? null,
-    insertionLength: `${inserted.insertedChars}`,
-    // Includes backspaces and cursor adjustments.
-    insertionLengthFull: `${inserted.insertedCharsFull}`,
-    app: fig.constants?.version || "",
-    terminal: state.figState.shellContext?.terminal ?? null,
-    shell: state.figState.shellContext?.shellPath?.split("/")?.at(-1) ?? null,
-  });
 
   logger.info("Inserted string, updating visibility");
   updateVisibilityPostInsert(item, isFullCompletion);

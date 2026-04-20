@@ -85,14 +85,8 @@ pub mod list_user_memory_entries;
 /// Types for the `ListWorkspaceMetadata` operation.
 pub mod list_workspace_metadata;
 
-/// Types for the `PushTelemetryEvent` operation.
-pub mod push_telemetry_event;
-
 /// Types for the `ResumeTransformation` operation.
 pub mod resume_transformation;
-
-/// Types for the `SendTelemetryEvent` operation.
-pub mod send_telemetry_event;
 
 /// Types for the `SetUserPreference` operation.
 pub mod set_user_preference;

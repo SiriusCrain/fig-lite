@@ -22,7 +22,6 @@ static INSTALL_METHOD: LazyLock<InstallMethod> = LazyLock::new(|| {
     InstallMethod::Unknown
 });
 
-/// The method of installation that Fig was installed with
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum InstallMethod {
     Brew,

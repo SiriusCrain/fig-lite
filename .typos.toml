@@ -1,4 +1,8 @@
 [files]
+extend-exclude = [
+    "cloned_spec/",
+    "*.vsix",
+]
 
 [default.extend-words]
 mmaped = "mmaped"

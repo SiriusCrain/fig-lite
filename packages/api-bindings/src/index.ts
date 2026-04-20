@@ -14,7 +14,6 @@ import * as Process from "./process.js";
 import * as Settings from "./settings.js";
 import * as Shell from "./shell.js";
 import * as State from "./state.js";
-import * as Telemetry from "./telemetry.js";
 import * as Types from "./types.js";
 import * as User from "./user.js";
 import * as WindowPosition from "./position.js";
@@ -36,7 +35,6 @@ const lib = {
   Settings,
   Shell,
   State,
-  Telemetry,
   Types,
   User,
   WindowPosition,
@@ -60,7 +58,6 @@ export {
   Settings,
   Shell,
   State,
-  Telemetry,
   Types,
   User,
   WindowPosition,

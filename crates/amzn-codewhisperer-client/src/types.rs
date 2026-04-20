@@ -157,7 +157,6 @@ pub use crate::types::_target_file_info::TargetFileInfo;
 pub use crate::types::_task_assist_plan_step::TaskAssistPlanStep;
 pub use crate::types::_task_assist_plan_step_action::TaskAssistPlanStepAction;
 pub use crate::types::_task_assist_planning_upload_context::TaskAssistPlanningUploadContext;
-pub use crate::types::_telemetry_event::TelemetryEvent;
 pub use crate::types::_terminal_user_interaction_event::TerminalUserInteractionEvent;
 pub use crate::types::_terminal_user_interaction_event_type::TerminalUserInteractionEventType;
 pub use crate::types::_test_generation_event::TestGenerationEvent;
@@ -535,8 +534,6 @@ mod _task_assist_plan_step;
 mod _task_assist_plan_step_action;
 
 mod _task_assist_planning_upload_context;
-
-mod _telemetry_event;
 
 mod _terminal_user_interaction_event;
 

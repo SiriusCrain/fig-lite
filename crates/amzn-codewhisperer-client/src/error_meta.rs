@@ -1360,52 +1360,6 @@ impl From<crate::operation::list_workspace_metadata::ListWorkspaceMetadataError>
 impl<R>
     From<
         ::aws_smithy_runtime_api::client::result::SdkError<
-            crate::operation::push_telemetry_event::PushTelemetryEventError,
-            R,
-        >,
-    > for Error
-where
-    R: Send + Sync + std::fmt::Debug + 'static,
-{
-    fn from(
-        err: ::aws_smithy_runtime_api::client::result::SdkError<
-            crate::operation::push_telemetry_event::PushTelemetryEventError,
-            R,
-        >,
-    ) -> Self {
-        match err {
-            ::aws_smithy_runtime_api::client::result::SdkError::ServiceError(context) => Self::from(context.into_err()),
-            _ => Error::Unhandled(crate::error::sealed_unhandled::Unhandled {
-                meta: ::aws_smithy_types::error::metadata::ProvideErrorMetadata::meta(&err).clone(),
-                source: err.into(),
-            }),
-        }
-    }
-}
-impl From<crate::operation::push_telemetry_event::PushTelemetryEventError> for Error {
-    fn from(err: crate::operation::push_telemetry_event::PushTelemetryEventError) -> Self {
-        match err {
-            crate::operation::push_telemetry_event::PushTelemetryEventError::ValidationError(inner) => {
-                Error::ValidationError(inner)
-            },
-            crate::operation::push_telemetry_event::PushTelemetryEventError::AccessDeniedError(inner) => {
-                Error::AccessDeniedError(inner)
-            },
-            crate::operation::push_telemetry_event::PushTelemetryEventError::InternalServerError(inner) => {
-                Error::InternalServerError(inner)
-            },
-            crate::operation::push_telemetry_event::PushTelemetryEventError::ThrottlingError(inner) => {
-                Error::ThrottlingError(inner)
-            },
-            crate::operation::push_telemetry_event::PushTelemetryEventError::Unhandled(inner) => {
-                Error::Unhandled(inner)
-            },
-        }
-    }
-}
-impl<R>
-    From<
-        ::aws_smithy_runtime_api::client::result::SdkError<
             crate::operation::resume_transformation::ResumeTransformationError,
             R,
         >,
@@ -1447,52 +1401,6 @@ impl From<crate::operation::resume_transformation::ResumeTransformationError> fo
                 Error::ResourceNotFoundError(inner)
             },
             crate::operation::resume_transformation::ResumeTransformationError::Unhandled(inner) => {
-                Error::Unhandled(inner)
-            },
-        }
-    }
-}
-impl<R>
-    From<
-        ::aws_smithy_runtime_api::client::result::SdkError<
-            crate::operation::send_telemetry_event::SendTelemetryEventError,
-            R,
-        >,
-    > for Error
-where
-    R: Send + Sync + std::fmt::Debug + 'static,
-{
-    fn from(
-        err: ::aws_smithy_runtime_api::client::result::SdkError<
-            crate::operation::send_telemetry_event::SendTelemetryEventError,
-            R,
-        >,
-    ) -> Self {
-        match err {
-            ::aws_smithy_runtime_api::client::result::SdkError::ServiceError(context) => Self::from(context.into_err()),
-            _ => Error::Unhandled(crate::error::sealed_unhandled::Unhandled {
-                meta: ::aws_smithy_types::error::metadata::ProvideErrorMetadata::meta(&err).clone(),
-                source: err.into(),
-            }),
-        }
-    }
-}
-impl From<crate::operation::send_telemetry_event::SendTelemetryEventError> for Error {
-    fn from(err: crate::operation::send_telemetry_event::SendTelemetryEventError) -> Self {
-        match err {
-            crate::operation::send_telemetry_event::SendTelemetryEventError::ValidationError(inner) => {
-                Error::ValidationError(inner)
-            },
-            crate::operation::send_telemetry_event::SendTelemetryEventError::AccessDeniedError(inner) => {
-                Error::AccessDeniedError(inner)
-            },
-            crate::operation::send_telemetry_event::SendTelemetryEventError::InternalServerError(inner) => {
-                Error::InternalServerError(inner)
-            },
-            crate::operation::send_telemetry_event::SendTelemetryEventError::ThrottlingError(inner) => {
-                Error::ThrottlingError(inner)
-            },
-            crate::operation::send_telemetry_event::SendTelemetryEventError::Unhandled(inner) => {
                 Error::Unhandled(inner)
             },
         }

@@ -252,9 +252,6 @@ where
                 UserLogoutRequest(request) => event_handler.user_logout(request!(request)).await,
                 ListAvailableProfilesRequest(request) => profile::list_available_profiles(request).await,
                 SetProfileRequest(request) => profile::set_profile(request).await,
-                ClientOriginatedSubMessage::TelemetryTrackRequest(_)
-                | ClientOriginatedSubMessage::TelemetryPageRequest(_)
-                | ClientOriginatedSubMessage::AggregateSessionMetricActionRequest(_) => RequestResult::success(),
             }
         },
         None => {

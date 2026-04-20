@@ -1,4 +1,5 @@
 pub mod directories;
+pub mod install_method;
 pub mod manifest;
 mod open;
 pub mod process_info;

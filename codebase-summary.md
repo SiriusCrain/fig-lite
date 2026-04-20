@@ -30,7 +30,6 @@
 - `fig_api_client` — Thin wrapper over `amzn-codewhisperer-client` exposing `generate_completions`, customization/profile listing, and telemetry-event upload. Chat/streaming types were removed in the fig-lite fork.
 - `amzn-codewhisperer-client` — Smithy-generated AWS SDK (CodeWhisperer). Used for the completions RPC. Many chat/agentic operations are unused but not yet pruned from the generated code.
 - `amzn-consolas-client` — Secondary completion backend.
-- `amzn-toolkit-telemetry-client` / `aws-toolkit-telemetry-definitions` — Metric posting.
 
 ### Auth
 - `fig_auth` — Builder ID + PKCE OAuth flow; secret store backed by the system keyring.
@@ -38,10 +37,6 @@
 ### Settings & state
 - `fig_settings` — SQLite-backed settings/state with migrations (`r2d2`/`rusqlite`).
 - `fig_os_shim` — OS abstraction layer used by tests.
-
-### Telemetry
-- `fig_telemetry_core` — Event type definitions + global emitter trait.
-- `fig_telemetry` — Runtime emitter that dispatches to CodeWhisperer and the toolkit metrics endpoint.
 
 ### IPC
 - `fig_proto` — Protobuf message definitions.

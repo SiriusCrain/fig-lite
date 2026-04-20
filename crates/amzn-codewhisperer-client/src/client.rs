@@ -135,11 +135,7 @@ mod list_user_memory_entries;
 
 mod list_workspace_metadata;
 
-mod push_telemetry_event;
-
 mod resume_transformation;
-
-mod send_telemetry_event;
 
 mod set_user_preference;
 

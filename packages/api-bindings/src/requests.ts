@@ -3,8 +3,6 @@
  */
 
 import {
-  AggregateSessionMetricActionRequest,
-  AggregateSessionMetricActionRequestSchema,
   AppendToFileRequest,
   AppendToFileRequestSchema,
   AuthBuilderIdPollCreateTokenRequest,
@@ -81,10 +79,6 @@ import {
   RunProcessResponse,
   SetProfileRequest,
   SetProfileRequestSchema,
-  TelemetryPageRequest,
-  TelemetryPageRequestSchema,
-  TelemetryTrackRequest,
-  TelemetryTrackRequestSchema,
   UpdateApplicationPropertiesRequest,
   UpdateApplicationPropertiesRequestSchema,
   UpdateApplicationRequest,
@@ -829,35 +823,6 @@ export async function sendUpdateApplicationPropertiesRequest(
   });
 }
 
-export async function sendTelemetryTrackRequest(
-  request: Omit<TelemetryTrackRequest, "$typeName" | "$unknown">,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    sendMessage(
-      {
-        case: "telemetryTrackRequest",
-        value: create(TelemetryTrackRequestSchema, request),
-      },
-      (response) => {
-        switch (response?.case) {
-          case "success":
-            resolve();
-            break;
-          case "error":
-            reject(Error(response.value));
-            break;
-          default:
-            reject(
-              Error(
-                `Invalid response '${response?.case}' for 'TelemetryTrackRequest'`,
-              ),
-            );
-        }
-      },
-    );
-  });
-}
-
 export async function sendOnboardingRequest(
   request: Omit<OnboardingRequest, "$typeName" | "$unknown">,
 ): Promise<void> {
@@ -1024,64 +989,6 @@ export async function sendCreateDirectoryRequest(
             reject(
               Error(
                 `Invalid response '${response?.case}' for 'CreateDirectoryRequest'`,
-              ),
-            );
-        }
-      },
-    );
-  });
-}
-
-export async function sendTelemetryPageRequest(
-  request: Omit<TelemetryPageRequest, "$typeName" | "$unknown">,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    sendMessage(
-      {
-        case: "telemetryPageRequest",
-        value: create(TelemetryPageRequestSchema, request),
-      },
-      (response) => {
-        switch (response?.case) {
-          case "success":
-            resolve();
-            break;
-          case "error":
-            reject(Error(response.value));
-            break;
-          default:
-            reject(
-              Error(
-                `Invalid response '${response?.case}' for 'TelemetryPageRequest'`,
-              ),
-            );
-        }
-      },
-    );
-  });
-}
-
-export async function sendAggregateSessionMetricActionRequest(
-  request: Omit<AggregateSessionMetricActionRequest, "$typeName" | "$unknown">,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    sendMessage(
-      {
-        case: "aggregateSessionMetricActionRequest",
-        value: create(AggregateSessionMetricActionRequestSchema, request),
-      },
-      (response) => {
-        switch (response?.case) {
-          case "success":
-            resolve();
-            break;
-          case "error":
-            reject(Error(response.value));
-            break;
-          default:
-            reject(
-              Error(
-                `Invalid response '${response?.case}' for 'AggregateSessionMetricActionRequest'`,
               ),
             );
         }

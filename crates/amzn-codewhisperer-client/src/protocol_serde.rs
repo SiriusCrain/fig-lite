@@ -84,11 +84,7 @@ pub(crate) mod shape_list_user_memory_entries;
 
 pub(crate) mod shape_list_workspace_metadata;
 
-pub(crate) mod shape_push_telemetry_event;
-
 pub(crate) mod shape_resume_transformation;
-
-pub(crate) mod shape_send_telemetry_event;
 
 pub(crate) mod shape_set_user_preference;
 
@@ -170,13 +166,9 @@ pub(crate) mod shape_list_user_memory_entries_input;
 
 pub(crate) mod shape_list_workspace_metadata_input;
 
-pub(crate) mod shape_push_telemetry_event_input;
-
 pub(crate) mod shape_resource_not_found_exception;
 
 pub(crate) mod shape_resume_transformation_input;
-
-pub(crate) mod shape_send_telemetry_event_input;
 
 pub(crate) mod shape_service_quota_exceeded_exception;
 
@@ -260,8 +252,6 @@ pub(crate) mod shape_target_code;
 
 pub(crate) mod shape_task_assist_plan_step;
 
-pub(crate) mod shape_telemetry_event;
-
 pub(crate) mod shape_test_generation_job;
 
 pub(crate) mod shape_transformation_job;
@@ -288,31 +278,11 @@ pub(crate) mod shape_workspace_metadata;
 
 pub(crate) mod shape_workspace_state;
 
-pub(crate) mod shape_chat_add_message_event;
-
-pub(crate) mod shape_chat_interact_with_message_event;
-
 pub(crate) mod shape_chat_message;
-
-pub(crate) mod shape_chat_user_modification_event;
 
 pub(crate) mod shape_code_analysis_upload_context;
 
-pub(crate) mod shape_code_coverage_event;
-
-pub(crate) mod shape_code_fix_acceptance_event;
-
-pub(crate) mod shape_code_fix_generation_event;
-
 pub(crate) mod shape_code_fix_upload_context;
-
-pub(crate) mod shape_code_scan_event;
-
-pub(crate) mod shape_code_scan_failed_event;
-
-pub(crate) mod shape_code_scan_remediations_event;
-
-pub(crate) mod shape_code_scan_succeeded_event;
 
 pub(crate) mod shape_completion;
 
@@ -320,31 +290,15 @@ pub(crate) mod shape_cursor_state;
 
 pub(crate) mod shape_customization;
 
-pub(crate) mod shape_doc_generation_event;
-
-pub(crate) mod shape_doc_v2_acceptance_event;
-
-pub(crate) mod shape_doc_v2_generation_event;
-
 pub(crate) mod shape_documentation_intent_context;
 
 pub(crate) mod shape_event;
-
-pub(crate) mod shape_feature_dev_code_acceptance_event;
-
-pub(crate) mod shape_feature_dev_code_generation_event;
-
-pub(crate) mod shape_feature_dev_event;
 
 pub(crate) mod shape_feature_evaluation;
 
 pub(crate) mod shape_free_trial_info;
 
-pub(crate) mod shape_inline_chat_event;
-
 pub(crate) mod shape_memory_entry_metadata;
-
-pub(crate) mod shape_metric_data;
 
 pub(crate) mod shape_opt_in_features;
 
@@ -370,15 +324,9 @@ pub(crate) mod shape_supported_input_types_list;
 
 pub(crate) mod shape_task_assist_planning_upload_context;
 
-pub(crate) mod shape_terminal_user_interaction_event;
-
-pub(crate) mod shape_test_generation_event;
-
 pub(crate) mod shape_text_document;
 
 pub(crate) mod shape_token_limits;
-
-pub(crate) mod shape_transform_event;
 
 pub(crate) mod shape_transformation_project_state;
 
@@ -387,10 +335,6 @@ pub(crate) mod shape_transformation_steps;
 pub(crate) mod shape_transformation_upload_context;
 
 pub(crate) mod shape_usage_limit_list;
-
-pub(crate) mod shape_user_modification_event;
-
-pub(crate) mod shape_user_trigger_decision_event;
 
 pub(crate) mod shape_workspace_context_upload_context;
 
@@ -408,15 +352,11 @@ pub(crate) mod shape_change_log_options;
 
 pub(crate) mod shape_dashboard_analytics;
 
-pub(crate) mod shape_dimension;
-
 pub(crate) mod shape_document_symbol;
 
 pub(crate) mod shape_edit;
 
 pub(crate) mod shape_feature_value;
-
-pub(crate) mod shape_ide_diagnostic;
 
 pub(crate) mod shape_identity_details;
 

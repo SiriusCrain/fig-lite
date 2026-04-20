@@ -291,7 +291,6 @@ pub async fn process_figterm_request(
         FigtermRequest::InlineShellCompletionSetEnabled(_) => {
             anyhow::bail!("InlineShellCompletionSetEnabled is not supported over remote")
         },
-        FigtermRequest::Telemtety(_) => anyhow::bail!("Telemetry is not supported over remote"),
     }
 }
 

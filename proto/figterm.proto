@@ -15,7 +15,6 @@ message FigtermRequestMessage {
     NotifySSHSessionStartedRequest notify_ssh_session_started = 7;
     InlineShellCompletionRequest inline_shell_completion = 8;
     InlineShellCompletionAcceptRequest inline_shell_completion_accept = 9;
-    TelemetryRequest telemtety = 10;
     InlineShellCompletionSetEnabledRequest inline_shell_completion_set_enabled = 11;
   }
 }
@@ -170,9 +169,4 @@ message InlineShellCompletionAcceptRequest {
 
 message InlineShellCompletionSetEnabledRequest {
   bool enabled = 1;
-}
-
-message TelemetryRequest {
-  // A json blob containing the event
-  string event_blob = 1;
 }

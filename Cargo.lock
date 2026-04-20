@@ -125,25 +125,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "amzn-toolkit-telemetry-client"
-version = "1.0.0"
-dependencies = [
- "aws-credential-types",
- "aws-http",
- "aws-runtime",
- "aws-smithy-async",
- "aws-smithy-http 0.62.5",
- "aws-smithy-json",
- "aws-smithy-runtime",
- "aws-smithy-runtime-api",
- "aws-smithy-types",
- "aws-types",
- "bytes",
- "http 0.2.12",
- "tracing",
-]
-
-[[package]]
 name = "android_system_properties"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -587,15 +568,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aws-http"
-version = "0.60.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1eda156637dc4fd310cd05b2a35f963a591684b02b13694bd790df48f5349ee0"
-dependencies = [
- "aws-runtime",
-]
-
-[[package]]
 name = "aws-lc-rs"
 version = "1.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -640,50 +612,6 @@ dependencies = [
  "pin-project-lite",
  "tracing",
  "uuid",
-]
-
-[[package]]
-name = "aws-sdk-cognitoidentity"
-version = "1.88.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a1eb04ebb4cd91b3f2570087e076861d8dee0c3b5d6339433ca3208376f8e67"
-dependencies = [
- "aws-credential-types",
- "aws-runtime",
- "aws-smithy-async",
- "aws-smithy-http 0.62.5",
- "aws-smithy-json",
- "aws-smithy-runtime",
- "aws-smithy-runtime-api",
- "aws-smithy-types",
- "aws-types",
- "bytes",
- "fastrand",
- "http 0.2.12",
- "regex-lite",
- "tracing",
-]
-
-[[package]]
-name = "aws-sdk-cognitoidentityprovider"
-version = "1.101.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c8c8bb32abeab6e3d90dcb699fe5abcbd44358268dc4a5b6764b338091f2a44"
-dependencies = [
- "aws-credential-types",
- "aws-runtime",
- "aws-smithy-async",
- "aws-smithy-http 0.62.5",
- "aws-smithy-json",
- "aws-smithy-runtime",
- "aws-smithy-runtime-api",
- "aws-smithy-types",
- "aws-types",
- "bytes",
- "fastrand",
- "http 0.2.12",
- "regex-lite",
- "tracing",
 ]
 
 [[package]]
@@ -985,19 +913,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eab77cdd036b11056d2a30a7af7b775789fb024bf216acc13884c6c97752ae56"
 dependencies = [
  "xmlparser",
-]
-
-[[package]]
-name = "aws-toolkit-telemetry-definitions"
-version = "0.1.0"
-dependencies = [
- "amzn-toolkit-telemetry-client",
- "convert_case 0.8.0",
- "prettyplease",
- "quote",
- "serde",
- "serde_json",
- "syn 2.0.108",
 ]
 
 [[package]]
@@ -2618,7 +2533,6 @@ dependencies = [
  "fig_ipc",
  "fig_os_shim",
  "fig_proto",
- "fig_telemetry",
  "fig_util",
  "serde",
  "serde_json",
@@ -2855,54 +2769,6 @@ dependencies = [
  "tracing",
  "url",
  "uuid",
-]
-
-[[package]]
-name = "fig_telemetry"
-version = "1.19.7"
-dependencies = [
- "amzn-codewhisperer-client",
- "amzn-toolkit-telemetry-client",
- "anyhow",
- "async-trait",
- "aws-credential-types",
- "aws-sdk-cognitoidentity",
- "aws-sdk-cognitoidentityprovider",
- "aws-smithy-async",
- "aws-smithy-types",
- "aws-toolkit-telemetry-definitions",
- "fig_api_client",
- "fig_auth",
- "fig_aws_common",
- "fig_ipc",
- "fig_os_shim",
- "fig_proto",
- "fig_request",
- "fig_settings",
- "fig_telemetry_core",
- "fig_util",
- "macos-utils",
- "serde",
- "serde_json",
- "thiserror 2.0.17",
- "tokio",
- "tracing",
- "tracing-test",
- "uuid",
-]
-
-[[package]]
-name = "fig_telemetry_core"
-version = "1.19.7"
-dependencies = [
- "amzn-codewhisperer-client",
- "amzn-toolkit-telemetry-client",
- "async-trait",
- "aws-toolkit-telemetry-definitions",
- "fig_util",
- "serde",
- "strum 0.27.2",
- "tokio",
 ]
 
 [[package]]
@@ -8628,27 +8494,6 @@ dependencies = [
  "tracing-core",
  "tracing-log",
  "tracing-serde",
-]
-
-[[package]]
-name = "tracing-test"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "557b891436fe0d5e0e363427fc7f217abf9ccd510d5136549847bdcbcd011d68"
-dependencies = [
- "tracing-core",
- "tracing-subscriber",
- "tracing-test-macro",
-]
-
-[[package]]
-name = "tracing-test-macro"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04659ddb06c87d233c566112c1c9c5b9e98256d9af50ec3bc9c8327f873a7568"
-dependencies = [
- "quote",
- "syn 2.0.108",
 ]
 
 [[package]]
