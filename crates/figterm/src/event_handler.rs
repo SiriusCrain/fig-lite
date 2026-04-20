@@ -10,7 +10,6 @@ use fig_proto::remote_hooks::{
     new_preexec_hook,
     new_prompt_hook,
 };
-// use fig_telemetry::sentry::configure_scope;
 use flume::Sender;
 use tracing::level_filters::LevelFilter;
 use tracing::{

@@ -261,6 +261,8 @@ message UpdateSettingsPropertyRequest {
   optional string value = 2;
 }
 
+/// Onboarding
+
 /// Telemetry
 message TelemetryProperty {
   string key = 1;
@@ -293,8 +295,6 @@ message AggregateSessionMetricActionRequest {
     Increment increment = 2;
   }
 }
-
-/// Onboarding
 
 enum OnboardingAction {
   ONBOARDING_ACTION_INSTALLATION_SCRIPT = 0;

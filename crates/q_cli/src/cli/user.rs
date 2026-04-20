@@ -34,10 +34,6 @@ use fig_ipc::local::{
     login_command,
     logout_command,
 };
-use fig_telemetry_core::{
-    QProfileSwitchIntent,
-    TelemetryResult,
-};
 use fig_util::system_info::is_remote;
 use fig_util::{
     CLI_BINARY_NAME,
@@ -295,7 +291,6 @@ pub async fn login_interactive(args: LoginArgs) -> Result<()> {
                                 exit(1);
                             },
                         }
-                        fig_telemetry::send_user_logged_in().await;
                         spinner.stop_with_message("Device authorized".into());
                     },
                     // If we are unable to open the link with the browser, then fallback to
@@ -369,7 +364,6 @@ async fn try_device_authorization(
         {
             PollCreateToken::Pending => {},
             PollCreateToken::Complete(_) => {
-                fig_telemetry::send_user_logged_in().await;
                 spinner.stop_with_message("Device authorized".into());
                 break;
             },
@@ -393,19 +387,7 @@ async fn select_profile_interactive(whoami: bool) -> Result<()> {
         return Ok(());
     }
 
-    let sso_region: Option<String> = fig_settings::state::get_string("auth.idc.region").ok().flatten();
-    let total_profiles = profiles.len() as i64;
-
     if whoami && profiles.len() == 1 {
-        if let Some(profile_region) = profiles[0].arn.split(':').nth(3) {
-            fig_telemetry::send_profile_state(
-                QProfileSwitchIntent::Update,
-                profile_region.to_string(),
-                TelemetryResult::Succeeded,
-                sso_region,
-            )
-            .await;
-        }
         spinner.stop_with_message(String::new());
         return Ok(fig_settings::state::set_value(
             "api.codewhisperer.profile",
@@ -440,32 +422,8 @@ async fn select_profile_interactive(whoami: bool) -> Result<()> {
             eprintln!("Set profile: {}\n", chosen.profile_name.as_str().green());
             fig_settings::state::set_value("api.codewhisperer.profile", profile)?;
             fig_settings::state::remove_value("api.selectedCustomization")?;
-
-            if let Some(profile_region) = chosen.arn.split(':').nth(3) {
-                let intent = if whoami {
-                    QProfileSwitchIntent::Auth
-                } else {
-                    QProfileSwitchIntent::User
-                };
-                fig_telemetry::send_did_select_profile(
-                    intent,
-                    profile_region.to_string(),
-                    TelemetryResult::Succeeded,
-                    sso_region,
-                    Some(total_profiles),
-                )
-                .await;
-            }
         },
         None => {
-            fig_telemetry::send_did_select_profile(
-                QProfileSwitchIntent::User,
-                "not-set".to_string(),
-                TelemetryResult::Cancelled,
-                sso_region,
-                Some(total_profiles),
-            )
-            .await;
             bail!("No profile selected.\n");
         },
     }

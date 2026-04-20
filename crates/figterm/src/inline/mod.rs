@@ -5,7 +5,6 @@ use std::fmt::Write;
 use std::sync::LazyLock;
 use std::time::{
     Duration,
-    Instant,
     SystemTime,
 };
 
@@ -26,15 +25,6 @@ use fig_proto::figterm::{
     InlineShellCompletionSetEnabledRequest,
 };
 use fig_settings::history::CommandInfo;
-use fig_telemetry::{
-    AppTelemetryEvent,
-    SuggestionState,
-};
-use fig_util::Shell;
-use fig_util::terminal::{
-    current_terminal,
-    current_terminal_version,
-};
 use flume::Sender;
 use regex::Regex;
 use tokio::sync::Mutex;
@@ -63,8 +53,6 @@ static CACHE_ENABLED: LazyLock<bool> =
     LazyLock::new(|| fig_os_shim::Env::new().q_inline_shell_completion_cache_enabled());
 static COMPLETION_CACHE: LazyLock<Mutex<CompletionCache>> = LazyLock::new(|| Mutex::new(CompletionCache::new()));
 
-static TELEMETRY_QUEUE: Mutex<TelemetryQueue> = Mutex::const_new(TelemetryQueue::new());
-
 static HISTORY_COUNT: LazyLock<usize> = LazyLock::new(|| {
     fig_os_shim::Env::new()
         .q_inline_shell_completion_history_count()
@@ -82,83 +70,6 @@ static DEBOUNCE_DURATION: LazyLock<Duration> = LazyLock::new(|| {
 
 pub async fn on_prompt() {
     COMPLETION_CACHE.lock().await.clear();
-    TELEMETRY_QUEUE.lock().await.send_all_items(None).await;
-}
-
-struct TelemetryQueue {
-    items: Vec<TelemetryQueueItem>,
-}
-
-impl TelemetryQueue {
-    const fn new() -> Self {
-        Self { items: Vec::new() }
-    }
-
-    async fn send_all_items(&mut self, retain: Option<usize>) {
-        let start_url = fig_auth::builder_id_token()
-            .await
-            .ok()
-            .flatten()
-            .and_then(|t| t.start_url);
-
-        let items_len = self.items.len();
-        let drain_len = retain.map_or(items_len, |n| items_len.saturating_sub(n));
-
-        for item in self.items.drain(..drain_len) {
-            let TelemetryQueueItem {
-                timestamp,
-                session_id,
-                request_id,
-                suggestion_state,
-                edit_buffer_len,
-                suggested_chars_len,
-                number_of_recommendations,
-                latency,
-                ..
-            } = item;
-
-            fig_telemetry::send_event(
-                AppTelemetryEvent::from_event(fig_telemetry_core::Event {
-                    created_time: Some(timestamp),
-                    credential_start_url: start_url.clone(),
-                    ty: fig_telemetry::EventType::InlineShellCompletionActioned {
-                        session_id,
-                        request_id,
-                        suggestion_state,
-                        edit_buffer_len,
-                        suggested_chars_len,
-                        number_of_recommendations,
-                        latency,
-                        terminal: current_terminal().map(|s| s.internal_id().into_owned()),
-                        terminal_version: current_terminal_version().map(Into::into),
-                        // The only supported shell currently is Zsh
-                        shell: Some(Shell::Zsh.as_str().into()),
-                        shell_version: None,
-                    },
-                })
-                .await,
-            )
-            .await;
-
-            // prevent more than 2 events per second
-            tokio::time::sleep(Duration::from_millis(500)).await;
-        }
-    }
-}
-
-struct TelemetryQueueItem {
-    buffer: String,
-    suggestion: String,
-
-    timestamp: SystemTime,
-
-    session_id: String,
-    request_id: String,
-    suggestion_state: SuggestionState,
-    edit_buffer_len: Option<i64>,
-    suggested_chars_len: i32,
-    number_of_recommendations: i32,
-    latency: Duration,
 }
 
 pub async fn handle_request(
@@ -259,8 +170,6 @@ pub async fn handle_request(
             next_token: None,
         };
 
-        let start_instant = Instant::now();
-
         let response = match client.generate_recommendations(input).await {
             Err(err) if err.is_throttling_error() => {
                 warn!(%err, "Too many requests, trying again in 1 second");
@@ -272,10 +181,7 @@ pub async fn handle_request(
 
         let insert_text = match response {
             Ok(output) => {
-                let request_id = output.request_id.unwrap_or_default();
-                let session_id = output.session_id.unwrap_or_default();
                 let recommendations = output.recommendations;
-                let number_of_recommendations = recommendations.len() as i32;
                 let mut completion_cache = COMPLETION_CACHE.lock().await;
 
                 let mut completions = recommendations
@@ -300,35 +206,6 @@ pub async fn handle_request(
                     if valid && !is_empty {
                         completion_cache.insert(full_text, 0.0);
                     }
-
-                    let suggestion_state = match (valid, completion.is_empty()) {
-                        (true, true) => SuggestionState::Empty,
-                        (true, false) => SuggestionState::Accept,
-                        (false, _) => SuggestionState::Discard,
-                    };
-
-                    tokio::spawn({
-                        let completion = completion.clone();
-                        let buffer = buffer.to_owned();
-                        async move {
-                            let mut queue = TELEMETRY_QUEUE.lock().await;
-                            queue.items.push(TelemetryQueueItem {
-                                suggested_chars_len: completion.chars().count() as i32,
-                                number_of_recommendations,
-                                suggestion: completion,
-                                timestamp: SystemTime::now(),
-                                session_id,
-                                request_id,
-                                latency: start_instant.elapsed(),
-                                suggestion_state,
-                                edit_buffer_len: buffer.chars().count().try_into().ok(),
-                                buffer,
-                            });
-                            // flush all but 4 messages, this is to retain messages that might have
-                            // an accept waiting
-                            queue.send_all_items(Some(4)).await;
-                        }
-                    });
 
                     if valid { Some(std::mem::take(completion)) } else { None }
                 } else {
@@ -364,15 +241,7 @@ pub async fn handle_request(
     }
 }
 
-pub async fn handle_accept(figterm_request: InlineShellCompletionAcceptRequest, _session_id: String) {
-    let mut queue = TELEMETRY_QUEUE.lock().await;
-    for item in queue.items.iter_mut() {
-        if item.buffer == figterm_request.buffer.trim_start() && item.suggestion == figterm_request.suggestion {
-            item.suggestion_state = SuggestionState::Accept;
-        }
-    }
-    queue.send_all_items(None).await;
-}
+pub async fn handle_accept(_figterm_request: InlineShellCompletionAcceptRequest, _session_id: String) {}
 
 pub async fn handle_set_enabled(figterm_request: InlineShellCompletionSetEnabledRequest, _session_id: String) {
     *INLINE_ENABLED.lock().await = figterm_request.enabled;

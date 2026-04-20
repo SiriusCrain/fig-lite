@@ -378,15 +378,7 @@ trait DoctorCheck<T = ()>: Sync
 where
     T: Sync + Send + Sized,
 {
-    // Name should be _static_ across different user's devices. It is used to generate
-    // a unique id for the check used in analytics. If name cannot be unique for some reason, you
-    // should override analytics_event_name with the unique name to be sent for analytics.
     fn name(&self) -> Cow<'static, str>;
-
-    fn analytics_event_name(&self) -> String {
-        let name = self.name().to_ascii_lowercase();
-        Regex::new(r"[^a-zA-Z0-9]+").unwrap().replace_all(&name, "_").into()
-    }
 
     async fn get_type(&self, _: &T, _platform: Platform) -> DoctorCheckType {
         DoctorCheckType::NormalCheck
@@ -962,10 +954,6 @@ impl DoctorCheck<Option<Shell>> for DotfileCheck {
         let path = self.short_path();
         let shell = self.integration.get_shell();
         format!("{shell} {path} integration check").into()
-    }
-
-    fn analytics_event_name(&self) -> String {
-        format!("dotfile_check_{}", self.integration.file_name())
     }
 
     async fn get_type(&self, current_shell: &Option<Shell>, _platform: Platform) -> DoctorCheckType {
@@ -1985,11 +1973,6 @@ where
 
         if config.all {
             continue;
-        }
-
-        if result.is_err() {
-            let analytics_event_name = check.analytics_event_name();
-            fig_telemetry::send_doctor_check_failed(analytics_event_name).await;
         }
 
         if let Err(DoctorError::Error { reason, fix, error, .. }) = result {

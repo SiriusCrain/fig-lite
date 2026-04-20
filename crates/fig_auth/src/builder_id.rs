@@ -41,14 +41,8 @@ use aws_smithy_runtime_api::client::identity::{
 };
 use aws_smithy_types::error::display::DisplayErrorContext;
 use aws_types::region::Region;
-use aws_types::request_id::RequestId;
 use aws_types::sdk_config::StalledStreamProtectionConfig;
 use fig_aws_common::app_name;
-use fig_telemetry_core::{
-    Event,
-    EventType,
-    TelemetryResult,
-};
 use time::OffsetDateTime;
 use tracing::{
     debug,
@@ -389,17 +383,6 @@ impl BuilderIdToken {
             .await
         {
             Ok(output) => {
-                fig_telemetry_core::send_event(
-                    Event::new(EventType::RefreshCredentials {
-                        request_id: output.request_id().unwrap_or_default().into(),
-                        result: TelemetryResult::Succeeded,
-                        reason: None,
-                        oauth_flow: registration.oauth_flow.to_string(),
-                    })
-                    .with_credential_start_url(self.start_url.clone().unwrap_or_else(|| START_URL.to_owned())),
-                )
-                .await;
-
                 let token: BuilderIdToken = Self::from_output(
                     output,
                     region.clone(),
@@ -421,16 +404,6 @@ impl BuilderIdToken {
 
                 // if the error is the client's fault, clear the token
                 if let SdkError::ServiceError(service_err) = &err {
-                    fig_telemetry_core::send_event(
-                        Event::new(EventType::RefreshCredentials {
-                            request_id: err.request_id().unwrap_or_default().into(),
-                            result: TelemetryResult::Failed,
-                            reason: Some(display_err.to_string()),
-                            oauth_flow: registration.oauth_flow.to_string(),
-                        })
-                        .with_credential_start_url(self.start_url.clone().unwrap_or_else(|| START_URL.to_owned())),
-                    )
-                    .await;
                     if !service_err.err().is_slow_down_exception() {
                         if let Err(err) = self.delete(secret_store).await {
                             error!(?err, "Failed to delete builder id token");

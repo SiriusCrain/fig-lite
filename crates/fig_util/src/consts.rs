@@ -46,7 +46,6 @@ pub mod url {
         "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-autocomplete.html";
     pub const AUTOCOMPLETE_SSH_WIKI: &str =
         "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-autocomplete-ssh.html";
-    pub const TELEMETRY_WIKI: &str = "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/opt-out-IDE.html";
 }
 
 /// Build time env vars

@@ -14,7 +14,6 @@ mod integrations;
 pub mod internal;
 mod issue;
 mod settings;
-mod telemetry;
 mod theme;
 mod uninstall;
 mod update;
@@ -66,7 +65,6 @@ use tracing::{
 };
 
 use self::integrations::IntegrationsSubcommands;
-use self::user::RootUserSubcommand;
 use crate::util::CliContext;
 use crate::util::desktop::{
     LaunchArgs,
@@ -168,9 +166,6 @@ pub enum CliRootCommands {
     /// Manage system integrations
     #[command(subcommand, alias("integration"))]
     Integrations(IntegrationsSubcommands),
-    /// Enable/disable telemetry
-    #[command(subcommand, hide = true)]
-    Telemetry(telemetry::TelemetrySubcommand),
     /// Version
     #[command(hide = true)]
     Version {
@@ -184,39 +179,6 @@ pub enum CliRootCommands {
     /// Inline shell completions
     #[command(subcommand)]
     Inline(inline::InlineSubcommand),
-}
-
-impl CliRootCommands {
-    fn name(&self) -> &'static str {
-        match self {
-            CliRootCommands::Hook(_) => "hook",
-            CliRootCommands::Debug(_) => "debug",
-            CliRootCommands::Settings(_) => "settings",
-            CliRootCommands::Setup(_) => "setup",
-            CliRootCommands::Uninstall { .. } => "uninstall",
-            CliRootCommands::Update(_) => "update",
-            CliRootCommands::Diagnostic(_) => "diagnostics",
-            CliRootCommands::Init(_) => "init",
-            CliRootCommands::Theme(_) => "theme",
-            CliRootCommands::Issue(_) => "issue",
-            CliRootCommands::RootUser(RootUserSubcommand::Login(_)) => "login",
-            CliRootCommands::RootUser(RootUserSubcommand::Logout) => "logout",
-            CliRootCommands::RootUser(RootUserSubcommand::Whoami { .. }) => "whoami",
-            CliRootCommands::RootUser(RootUserSubcommand::Profile) => "profile",
-            CliRootCommands::User(_) => "user",
-            CliRootCommands::Doctor(_) => "doctor",
-            CliRootCommands::Completion(_) => "completion",
-            CliRootCommands::Internal(_) => "internal",
-            CliRootCommands::Launch => "launch",
-            CliRootCommands::Quit => "quit",
-            CliRootCommands::Restart { .. } => "restart",
-            CliRootCommands::Integrations(_) => "integrations",
-            CliRootCommands::Telemetry(_) => "telemetry",
-            CliRootCommands::Version { .. } => "version",
-            CliRootCommands::Dashboard => "dashboard",
-            CliRootCommands::Inline(_) => "inline",
-        }
-    }
 }
 
 const HELP_TEXT: &str = color_print::cstr! {"
@@ -278,8 +240,6 @@ impl Cli {
 
         debug!(command =? std::env::args().collect::<Vec<_>>(), "Command ran");
 
-        self.send_telemetry().await;
-
         if self.help_all {
             return self.print_help_all();
         }
@@ -315,28 +275,12 @@ impl Cli {
                     launch_dashboard(false).await
                 },
                 CliRootCommands::Integrations(subcommand) => subcommand.execute().await,
-                CliRootCommands::Telemetry(subcommand) => subcommand.execute().await,
                 CliRootCommands::Version { changelog } => Self::print_version(changelog),
                 CliRootCommands::Dashboard => launch_dashboard(false).await,
                 CliRootCommands::Inline(subcommand) => subcommand.execute(&cli_context).await,
             },
             // Root command
             None => launch_dashboard(true).await,
-        }
-    }
-
-    async fn send_telemetry(&self) {
-        match &self.subcommand {
-            None
-            | Some(
-                CliRootCommands::Init(_)
-                | CliRootCommands::Internal(_)
-                | CliRootCommands::Completion(_)
-                | CliRootCommands::Hook(_),
-            ) => {},
-            Some(subcommand) => {
-                fig_telemetry::send_cli_subcommand_executed(subcommand.name()).await;
-            },
         }
     }
 

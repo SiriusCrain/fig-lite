@@ -3,7 +3,6 @@ mod notifications;
 mod onboarding;
 mod process;
 mod properties;
-mod telemetry;
 mod user;
 mod window;
 
@@ -27,7 +26,6 @@ use fig_os_shim::{
 };
 use fig_proto::fig::server_originated_message::Submessage as ServerOriginatedSubMessage;
 use fig_proto::fig::{
-    AggregateSessionMetricActionRequest,
     ClientOriginatedMessage,
     DragWindowRequest,
     InsertTextRequest,
@@ -132,13 +130,6 @@ impl<'a> fig_desktop_api::handler::EventHandler for EventHandler<'a> {
 
     async fn insert_text(&self, request: Wrapped<Self::Ctx, InsertTextRequest>) -> RequestResult {
         figterm::insert_text(request.request, request.context.figterm_state).await
-    }
-
-    async fn aggregate_session_metric_action(
-        &self,
-        request: Wrapped<Self::Ctx, AggregateSessionMetricActionRequest>,
-    ) -> RequestResult {
-        telemetry::handle_aggregate_session_metric_action_request(request.request, request.context.figterm_state)
     }
 
     async fn position_window(&self, request: Wrapped<Self::Ctx, PositionWindowRequest>) -> RequestResult {

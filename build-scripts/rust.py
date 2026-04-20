@@ -78,7 +78,6 @@ def rust_env(release: bool, variant: Optional[Variant] = None, linker=None) -> D
         env["AMAZON_Q_BUILD_VARIANT"] = variant.name
 
     # Test related env vars:
-    env["Q_TELEMETRY_CLIENT_ID"] = "ffffffff-ffff-ffff-ffff-ffffffffffff"
     if skip_fish_tests():
         env["AMAZON_Q_BUILD_SKIP_FISH_TESTS"] = "1"
 

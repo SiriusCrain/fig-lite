@@ -81,10 +81,7 @@ pub async fn run_install(ctx: Arc<Context>, ignore_immediate_update: bool) {
             .is_ok_and(|path| path.exists())
             && !fig_settings::state::get_bool_or(MIGRATED_KEY, false)
         {
-            let set = fig_settings::state::set_value(MIGRATED_KEY, true);
-            if set.is_ok() {
-                fig_telemetry::send_fig_user_migrated().await;
-            }
+            let _ = fig_settings::state::set_value(MIGRATED_KEY, true);
         }
     }
 

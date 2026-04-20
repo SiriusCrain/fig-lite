@@ -10,7 +10,6 @@ use fig_os_shim::{
 pub use fig_proto::fig::client_originated_message::Submessage as ClientOriginatedSubMessage;
 pub use fig_proto::fig::server_originated_message::Submessage as ServerOriginatedSubMessage;
 use fig_proto::fig::{
-    AggregateSessionMetricActionRequest,
     ClientOriginatedMessage,
     DragWindowRequest,
     InsertTextRequest,
@@ -51,13 +50,6 @@ pub trait EventHandler {
     }
 
     async fn insert_text(&self, request: Wrapped<Self::Ctx, InsertTextRequest>) -> RequestResult {
-        RequestResult::unimplemented(request.request)
-    }
-
-    async fn aggregate_session_metric_action(
-        &self,
-        request: Wrapped<Self::Ctx, AggregateSessionMetricActionRequest>,
-    ) -> RequestResult {
         RequestResult::unimplemented(request.request)
     }
 
@@ -162,7 +154,6 @@ where
     match message.submessage {
         Some(submessage) => {
             use ClientOriginatedSubMessage::{
-                AggregateSessionMetricActionRequest,
                 AppendToFileRequest,
                 AuthBuilderIdPollCreateTokenRequest,
                 AuthBuilderIdStartDeviceAuthorizationRequest,
@@ -191,8 +182,6 @@ where
                 ReadFileRequest,
                 RunProcessRequest,
                 SetProfileRequest,
-                TelemetryPageRequest,
-                TelemetryTrackRequest,
                 UpdateApplicationPropertiesRequest,
                 UpdateApplicationRequest,
                 UpdateLocalStateRequest,
@@ -229,12 +218,6 @@ where
                 // settings
                 GetSettingsPropertyRequest(request) => settings::get(request).await,
                 UpdateSettingsPropertyRequest(request) => settings::update(request).await,
-                // telemetry
-                TelemetryTrackRequest(request) => telemetry::handle_track_request(request).await,
-                TelemetryPageRequest(request) => telemetry::handle_page_request(request).await,
-                AggregateSessionMetricActionRequest(request) => {
-                    event_handler.aggregate_session_metric_action(request!(request)).await
-                },
                 // window
                 PositionWindowRequest(request) => event_handler.position_window(request!(request)).await,
                 WindowFocusRequest(request) => event_handler.window_focus(request!(request)).await,
@@ -269,6 +252,9 @@ where
                 UserLogoutRequest(request) => event_handler.user_logout(request!(request)).await,
                 ListAvailableProfilesRequest(request) => profile::list_available_profiles(request).await,
                 SetProfileRequest(request) => profile::set_profile(request).await,
+                ClientOriginatedSubMessage::TelemetryTrackRequest(_)
+                | ClientOriginatedSubMessage::TelemetryPageRequest(_)
+                | ClientOriginatedSubMessage::AggregateSessionMetricActionRequest(_) => RequestResult::success(),
             }
         },
         None => {
