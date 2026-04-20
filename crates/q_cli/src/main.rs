@@ -66,10 +66,7 @@ fn main() -> Result<ExitCode> {
     .enable_all()
     .build()?;
 
-    let result = runtime.block_on(async {
-        let result = parsed.execute().await;
-        result
-    });
+    let result = runtime.block_on(parsed.execute());
 
     match result {
         Ok(exit_code) => Ok(exit_code),
