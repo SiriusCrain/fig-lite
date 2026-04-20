@@ -4,7 +4,7 @@ export default {
     "cargo clippy --locked --color always -- -D warnings",
   ],
   "*.proto": () => [
-    "cd proto && buf lint && buf format --exit-code > /dev/null",
+    "cd proto && pnpm exec buf lint && pnpm exec buf format --exit-code > /dev/null",
   ],
   "*.py": ["ruff format --check", "ruff check"],
   "*.{ts,js,tsx,jsx,mjs}": "prettier --check",
