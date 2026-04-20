@@ -343,10 +343,8 @@ fn login_prompt_code(shell: Shell) -> String {
         "Q_LOGIN_PROMPT",
         GuardAssignment::AfterSourcing,
         format!(
-            "printf '\\nRun {} to log back into {PRODUCT_NAME}. Logging back in allows you to use AI features such as inline completions, {}, and {}\\n\\n'\n",
+            "printf '\\nRun {} to log back into {PRODUCT_NAME}. Logging back in allows you to use AI features such as inline completions.\\n\\n'\n",
             format!("{CLI_BINARY_NAME} login").magenta(),
-            format!("{CLI_BINARY_NAME} translate").magenta(),
-            format!("{CLI_BINARY_NAME} chat").magenta()
         ),
     )
 }
@@ -432,10 +430,8 @@ mod tests {
             assert_eq!(
                 login_prompt_output,
                 format!(
-                    "\nRun {} to log back into {PRODUCT_NAME}. Logging back in allows you to use AI features such as inline completions, {}, and {}\n\n",
+                    "\nRun {} to log back into {PRODUCT_NAME}. Logging back in allows you to use AI features such as inline completions.\n\n",
                     format!("{CLI_BINARY_NAME} login").magenta(),
-                    format!("{CLI_BINARY_NAME} translate").magenta(),
-                    format!("{CLI_BINARY_NAME} chat").magenta()
                 )
             );
         }

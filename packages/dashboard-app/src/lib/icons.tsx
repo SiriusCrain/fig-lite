@@ -13,9 +13,6 @@ export function getIconFromName(name: string, size?: number) {
     case "inline":
     case "inline shell completions":
       return <Icon.InlineShell size={size} />;
-    case "translate":
-    case "translation":
-      return <Icon.Translate size={size} />;
     case "chat":
       return <Icon.Chat size={size} />;
     case "account":

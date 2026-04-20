@@ -16,7 +16,6 @@ mod issue;
 mod settings;
 mod telemetry;
 mod theme;
-mod translate;
 mod uninstall;
 mod update;
 mod user;
@@ -169,9 +168,6 @@ pub enum CliRootCommands {
     /// Manage system integrations
     #[command(subcommand, alias("integration"))]
     Integrations(IntegrationsSubcommands),
-    /// Natural Language to Shell translation
-    #[command(alias("ai"))]
-    Translate(translate::TranslateArgs),
     /// Enable/disable telemetry
     #[command(subcommand, hide = true)]
     Telemetry(telemetry::TelemetrySubcommand),
@@ -215,7 +211,6 @@ impl CliRootCommands {
             CliRootCommands::Quit => "quit",
             CliRootCommands::Restart { .. } => "restart",
             CliRootCommands::Integrations(_) => "integrations",
-            CliRootCommands::Translate(_) => "translate",
             CliRootCommands::Telemetry(_) => "telemetry",
             CliRootCommands::Version { .. } => "version",
             CliRootCommands::Dashboard => "dashboard",
@@ -230,7 +225,6 @@ const HELP_TEXT: &str = color_print::cstr! {"
 
 <magenta,em>Popular Subcommands</magenta,em>              <black!><em>Usage:</em> q [subcommand]</black!>
 ╭────────────────────────────────────────────────────╮
-│ <em>translate</em>    <black!>Natural Language to Shell translation</black!> │
 │ <em>doctor</em>       <black!>Debug installation issues</black!>             │
 │ <em>settings</em>     <black!>Customize appearance & behavior</black!>       │
 │ <em>quit</em>         <black!>Quit the app</black!>                          │
@@ -272,7 +266,6 @@ impl Cli {
             },
             log_to_stdout: fig_os_shim::Env::new().q_log_stdout() || self.verbose > 0,
             log_file_path: match self.subcommand {
-                Some(CliRootCommands::Translate(..)) => Some("translate.log".to_owned()),
                 Some(CliRootCommands::Internal(InternalSubcommand::Multiplexer(_))) => Some("mux.log".to_owned()),
                 _ => match fig_log::get_log_level_max() >= Level::DEBUG {
                     true => Some("cli.log".to_owned()),
@@ -322,7 +315,6 @@ impl Cli {
                     launch_dashboard(false).await
                 },
                 CliRootCommands::Integrations(subcommand) => subcommand.execute().await,
-                CliRootCommands::Translate(args) => args.execute().await,
                 CliRootCommands::Telemetry(subcommand) => subcommand.execute().await,
                 CliRootCommands::Version { changelog } => Self::print_version(changelog),
                 CliRootCommands::Dashboard => launch_dashboard(false).await,
