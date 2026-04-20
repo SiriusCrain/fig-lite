@@ -10,8 +10,6 @@ export const AUTOCOMPLETE_WIKI_URL =
   "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-autocomplete.html";
 export const AUTOCOMPLETE_SSH_WIKI_URL =
   "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-autocomplete-ssh.html";
-export const INLINE_WIKI_URL =
-  "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-inline.html";
 export const Q_MIGRATION_URL =
   "https://docs.aws.amazon.com/codewhisperer/latest/userguide/whisper-legacy.html";
 export const KIRO_CLI_URL = "https://kiro.dev/cli-upgrade";
