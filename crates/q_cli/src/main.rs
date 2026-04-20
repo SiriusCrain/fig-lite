@@ -30,7 +30,7 @@ fn main() -> Result<ExitCode> {
     let subcommand = args.nth(1);
     let multithread = matches!(
         subcommand.as_deref(),
-        Some("init" | "_" | "internal" | "completion" | "hook" | "chat")
+        Some("init" | "_" | "internal" | "completion" | "hook")
     );
 
     let parsed = match cli::Cli::try_parse() {

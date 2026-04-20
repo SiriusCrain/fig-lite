@@ -1,7 +1,6 @@
 mod cli_context;
 pub mod desktop;
 pub mod pid_file;
-mod region_check;
 pub mod spinner;
 
 use std::env;
@@ -48,7 +47,6 @@ use globset::{
     GlobSetBuilder,
 };
 use regex::Regex;
-pub use region_check::region_check;
 use tracing::warn;
 
 /// Glob patterns against full paths

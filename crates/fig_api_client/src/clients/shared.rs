@@ -6,7 +6,6 @@ use aws_config::timeout::TimeoutConfig;
 use aws_credential_types::Credentials;
 use aws_credential_types::provider::ProvideCredentials;
 use aws_types::SdkConfig;
-use aws_types::sdk_config::StalledStreamProtectionConfig;
 use fig_aws_common::behavior_version;
 
 use crate::credentials::CredentialsChain;
@@ -30,12 +29,6 @@ pub(crate) fn timeout_config() -> TimeoutConfig {
         .operation_timeout(timeout)
         .operation_attempt_timeout(timeout)
         .connect_timeout(timeout)
-        .build()
-}
-
-pub(crate) fn stalled_stream_protection_config() -> StalledStreamProtectionConfig {
-    StalledStreamProtectionConfig::enabled()
-        .grace_period(Duration::from_secs(60 * 5))
         .build()
 }
 

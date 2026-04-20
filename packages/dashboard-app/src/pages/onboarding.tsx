@@ -1,5 +1,4 @@
 import autocompleteDemo from "@assets/images/autocomplete_demo.gif";
-import chatDemo from "@assets/images/chat_demo.gif";
 import { Link } from "@/components/ui/link";
 import { AUTOCOMPLETE_SSH_WIKI_URL, KIRO_CLI_URL } from "@/lib/constants";
 import { Terminal } from "@/components/ui/terminal";
@@ -85,12 +84,9 @@ export default function Page() {
           </li>
         </ol>
       </div>
-      <Terminal tabNames={["Autocomplete", "Chat"]}>
+      <Terminal tabNames={["Autocomplete"]}>
         <Terminal.Tab>
           <img src={autocompleteDemo} alt="autocomplete demo" />
-        </Terminal.Tab>
-        <Terminal.Tab>
-          <img src={chatDemo} alt="chat demo" />
         </Terminal.Tab>
       </Terminal>
     </div>

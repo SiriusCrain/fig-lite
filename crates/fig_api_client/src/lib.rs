@@ -8,10 +8,7 @@ pub(crate) mod interceptor;
 pub mod model;
 pub mod profile;
 
-pub use clients::{
-    Client,
-    StreamingClient,
-};
+pub use clients::Client;
 pub use customization::Customization;
 pub use endpoints::Endpoint;
 pub use error::Error;

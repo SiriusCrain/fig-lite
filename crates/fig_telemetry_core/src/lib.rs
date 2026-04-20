@@ -9,10 +9,7 @@ pub use amzn_toolkit_telemetry_client::types::MetricDatum;
 use aws_toolkit_telemetry_definitions::IntoMetricDatum;
 use aws_toolkit_telemetry_definitions::metrics::{
     AmazonqDidSelectProfile,
-    AmazonqEndChat,
     AmazonqProfileState,
-    AmazonqStartChat,
-    CodewhispererterminalAddChatMessage,
     CodewhispererterminalCliSubcommandExecuted,
     CodewhispererterminalCompletionInserted,
     CodewhispererterminalDashboardPageViewed,
@@ -24,7 +21,6 @@ use aws_toolkit_telemetry_definitions::metrics::{
     CodewhispererterminalMigrateOldClientId,
     CodewhispererterminalRefreshCredentials,
     CodewhispererterminalToolUseSuggested,
-    CodewhispererterminalTranslationActioned,
     CodewhispererterminalUserLoggedIn,
 };
 use aws_toolkit_telemetry_definitions::types::{
@@ -183,29 +179,6 @@ impl Event {
                 }
                 .into_metric_datum(),
             ),
-            EventType::TranslationActioned {
-                latency: _,
-                suggestion_state,
-                terminal,
-                terminal_version,
-                shell,
-                shell_version,
-            } => Some(
-                CodewhispererterminalTranslationActioned {
-                    create_time: self.created_time,
-                    value: None,
-                    credential_start_url: self.credential_start_url.map(Into::into),
-                    codewhispererterminal_terminal: terminal.map(Into::into),
-                    codewhispererterminal_terminal_version: terminal_version.map(Into::into),
-                    codewhispererterminal_shell: shell.map(Into::into),
-                    codewhispererterminal_shell_version: shell_version.map(Into::into),
-                    codewhispererterminal_duration: None,
-                    codewhispererterminal_time_to_suggestion: None,
-                    codewhispererterminal_accepted: Some(suggestion_state.is_accepted().into()),
-                    codewhispererterminal_in_cloudshell: in_cloudshell(),
-                }
-                .into_metric_datum(),
-            ),
             EventType::CliSubcommandExecuted {
                 subcommand,
                 terminal,
@@ -269,41 +242,6 @@ impl Event {
                     create_time: self.created_time,
                     value: None,
                     credential_start_url: self.credential_start_url.map(Into::into),
-                }
-                .into_metric_datum(),
-            ),
-            EventType::ChatStart { conversation_id } => Some(
-                AmazonqStartChat {
-                    create_time: self.created_time,
-                    value: None,
-                    credential_start_url: self.credential_start_url.map(Into::into),
-                    amazonq_conversation_id: Some(conversation_id.into()),
-                    codewhispererterminal_in_cloudshell: in_cloudshell(),
-                }
-                .into_metric_datum(),
-            ),
-            EventType::ChatEnd { conversation_id } => Some(
-                AmazonqEndChat {
-                    create_time: self.created_time,
-                    value: None,
-                    credential_start_url: self.credential_start_url.map(Into::into),
-                    amazonq_conversation_id: Some(conversation_id.into()),
-                    codewhispererterminal_in_cloudshell: in_cloudshell(),
-                }
-                .into_metric_datum(),
-            ),
-            EventType::ChatAddedMessage {
-                conversation_id,
-                context_file_length,
-                ..
-            } => Some(
-                CodewhispererterminalAddChatMessage {
-                    create_time: self.created_time,
-                    value: None,
-                    amazonq_conversation_id: Some(conversation_id.into()),
-                    credential_start_url: self.credential_start_url.map(Into::into),
-                    codewhispererterminal_in_cloudshell: in_cloudshell(),
-                    codewhispererterminal_context_file_length: context_file_length.map(|l| l as i64).map(Into::into),
                 }
                 .into_metric_datum(),
             ),
@@ -438,14 +376,6 @@ pub enum EventType {
         shell: Option<String>,
         shell_version: Option<String>,
     },
-    TranslationActioned {
-        latency: Duration,
-        suggestion_state: SuggestionState,
-        terminal: Option<String>,
-        terminal_version: Option<String>,
-        shell: Option<String>,
-        shell_version: Option<String>,
-    },
     CliSubcommandExecuted {
         subcommand: String,
         terminal: Option<String>,
@@ -467,17 +397,6 @@ pub enum EventType {
         menu_bar_item: Option<String>,
     },
     FigUserMigrated {},
-    ChatStart {
-        conversation_id: String,
-    },
-    ChatEnd {
-        conversation_id: String,
-    },
-    ChatAddedMessage {
-        conversation_id: String,
-        message_id: String,
-        context_file_length: Option<usize>,
-    },
     MigrateClientId {
         old_client_id: String,
     },

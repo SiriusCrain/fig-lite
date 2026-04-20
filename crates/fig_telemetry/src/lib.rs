@@ -13,7 +13,6 @@ use std::time::{
 };
 
 use amzn_codewhisperer_client::types::{
-    ChatAddMessageEvent,
     CompletionType,
     IdeCategory,
     OperatingSystem,
@@ -310,38 +309,12 @@ impl Client {
 
     async fn send_cw_telemetry_event(&self, event: &AppTelemetryEvent) {
         match &event.ty {
-            EventType::TranslationActioned {
-                latency,
-                suggestion_state,
-                terminal,
-                terminal_version,
-                shell,
-                shell_version,
-            } => {
-                self.send_cw_telemetry_translation_action(
-                    *latency,
-                    *suggestion_state,
-                    terminal.clone(),
-                    terminal_version.clone(),
-                    shell.clone(),
-                    shell_version.clone(),
-                )
-                .await;
-            },
             EventType::CompletionInserted {
                 command,
                 terminal,
                 shell,
             } => {
                 self.send_cw_telemetry_completion_inserted(command.clone(), terminal.clone(), shell.clone())
-                    .await;
-            },
-            EventType::ChatAddedMessage {
-                conversation_id,
-                message_id,
-                ..
-            } => {
-                self.send_cw_telemetry_chat_add_message_event(conversation_id.clone(), message_id.clone())
                     .await;
             },
             EventType::InlineShellCompletionActioned {
@@ -394,63 +367,6 @@ impl Client {
         }
     }
 
-    async fn send_cw_telemetry_translation_action(
-        &self,
-        latency: Duration,
-        suggestion_state: SuggestionState,
-        terminal: Option<String>,
-        terminal_version: Option<String>,
-        shell: Option<String>,
-        shell_version: Option<String>,
-    ) {
-        let Some(codewhisperer_client) = self.codewhisperer_client.clone() else {
-            return;
-        };
-        let user_context = self.user_context().unwrap();
-        let opt_out_preference = opt_out_preference();
-
-        let mut set = JOIN_SET.lock().await;
-        set.spawn(async move {
-            let mut terminal_user_interaction_event_builder = TerminalUserInteractionEvent::builder()
-                .terminal_user_interaction_event_type(
-                    TerminalUserInteractionEventType::CodewhispererTerminalTranslationAction,
-                )
-                .time_to_suggestion(latency.as_millis() as i32)
-                .is_completion_accepted(suggestion_state == SuggestionState::Accept);
-
-            if let Some(terminal) = terminal {
-                terminal_user_interaction_event_builder = terminal_user_interaction_event_builder.terminal(terminal);
-            }
-
-            if let Some(terminal_version) = terminal_version {
-                terminal_user_interaction_event_builder =
-                    terminal_user_interaction_event_builder.terminal_version(terminal_version);
-            }
-
-            if let Some(shell) = shell {
-                terminal_user_interaction_event_builder = terminal_user_interaction_event_builder.shell(shell);
-            }
-
-            if let Some(shell_version) = shell_version {
-                terminal_user_interaction_event_builder =
-                    terminal_user_interaction_event_builder.shell_version(shell_version);
-            }
-
-            let terminal_user_interaction_event = terminal_user_interaction_event_builder.build();
-
-            if let Err(err) = codewhisperer_client
-                .send_telemetry_event(
-                    TelemetryEvent::TerminalUserInteractionEvent(terminal_user_interaction_event),
-                    user_context,
-                    opt_out_preference,
-                )
-                .await
-            {
-                error!(err =% DisplayErrorContext(err), "Failed to send telemetry event");
-            }
-        });
-    }
-
     async fn send_cw_telemetry_completion_inserted(
         &self,
         command: String,
@@ -484,40 +400,6 @@ impl Client {
             if let Err(err) = codewhisperer_client
                 .send_telemetry_event(
                     TelemetryEvent::TerminalUserInteractionEvent(terminal_user_interaction_event),
-                    user_context,
-                    opt_out_preference,
-                )
-                .await
-            {
-                error!(err =% DisplayErrorContext(err), "Failed to send telemetry event");
-            }
-        });
-    }
-
-    async fn send_cw_telemetry_chat_add_message_event(&self, conversation_id: String, message_id: String) {
-        let Some(codewhisperer_client) = self.codewhisperer_client.clone() else {
-            return;
-        };
-        let user_context = self.user_context().unwrap();
-        let opt_out_preference = opt_out_preference();
-
-        let chat_add_message_event = match ChatAddMessageEvent::builder()
-            .conversation_id(conversation_id)
-            .message_id(message_id)
-            .build()
-        {
-            Ok(event) => event,
-            Err(err) => {
-                error!(err =% DisplayErrorContext(err), "Failed to send telemetry event");
-                return;
-            },
-        };
-
-        let mut set = JOIN_SET.lock().await;
-        set.spawn(async move {
-            if let Err(err) = codewhisperer_client
-                .send_telemetry_event(
-                    TelemetryEvent::ChatAddMessageEvent(chat_add_message_event),
                     user_context,
                     opt_out_preference,
                 )
@@ -621,20 +503,6 @@ pub async fn send_completion_inserted(command: String, terminal: Option<String>,
     dispatch_or_send_event(event).await;
 }
 
-pub async fn send_translation_actioned(latency: Duration, suggestion_state: SuggestionState) {
-    let (shell, shell_version) = shell().await;
-    let event = AppTelemetryEvent::new(EventType::TranslationActioned {
-        latency,
-        suggestion_state,
-        terminal: current_terminal().map(|t| t.internal_id().to_string()),
-        terminal_version: current_terminal_version().map(Into::into),
-        shell: shell.map(|s| s.to_string()),
-        shell_version,
-    })
-    .await;
-    dispatch_or_send_event(event).await;
-}
-
 pub async fn send_cli_subcommand_executed(subcommand: impl Into<String>) {
     let (shell, shell_version) = shell().await;
     let event = AppTelemetryEvent::new(EventType::CliSubcommandExecuted {
@@ -676,26 +544,6 @@ pub async fn send_menu_bar_actioned(menu_bar_item: Option<impl Into<String>>) {
 
 pub async fn send_fig_user_migrated() {
     let event = AppTelemetryEvent::new(EventType::FigUserMigrated {}).await;
-    dispatch_or_send_event(event).await;
-}
-
-pub async fn send_start_chat(conversation_id: String) {
-    let event = AppTelemetryEvent::new(EventType::ChatStart { conversation_id }).await;
-    dispatch_or_send_event(event).await;
-}
-
-pub async fn send_end_chat(conversation_id: String) {
-    let event = AppTelemetryEvent::new(EventType::ChatEnd { conversation_id }).await;
-    dispatch_or_send_event(event).await;
-}
-
-pub async fn send_chat_added_message(conversation_id: String, message_id: String, context_file_length: Option<usize>) {
-    let event = AppTelemetryEvent::new(EventType::ChatAddedMessage {
-        conversation_id,
-        message_id,
-        context_file_length,
-    })
-    .await;
     dispatch_or_send_event(event).await;
 }
 
@@ -818,12 +666,10 @@ mod test {
     async fn test_all_telemetry() {
         send_user_logged_in().await;
         send_completion_inserted(CLI_BINARY_NAME.to_owned(), None, None).await;
-        send_translation_actioned(Duration::from_millis(10), SuggestionState::Accept).await;
         send_cli_subcommand_executed("doctor").await;
         send_doctor_check_failed("").await;
         send_dashboard_page_viewed("/").await;
         send_menu_bar_actioned(Some("Settings")).await;
-        send_chat_added_message("debug".to_owned(), "debug".to_owned(), Some(123)).await;
 
         finish_telemetry_unwrap().await;
 
@@ -832,28 +678,5 @@ mod test {
         assert!(!logs_contain("WARN"));
         assert!(!logs_contain("warn"));
         assert!(!logs_contain("Failed to post metric"));
-    }
-
-    #[tokio::test]
-    #[ignore = "needs auth which is not in CI"]
-    async fn test_without_optout() {
-        let client = Client::new(TelemetryStage::BETA).await;
-        client
-            .codewhisperer_client
-            .as_ref()
-            .unwrap()
-            .send_telemetry_event(
-                TelemetryEvent::ChatAddMessageEvent(
-                    ChatAddMessageEvent::builder()
-                        .conversation_id("debug".to_owned())
-                        .message_id("debug".to_owned())
-                        .build()
-                        .unwrap(),
-                ),
-                client.user_context().unwrap(),
-                OptOutPreference::OptIn,
-            )
-            .await
-            .unwrap();
     }
 }

@@ -2,7 +2,6 @@ import { Routes, Route, Outlet, useNavigate } from "react-router-dom";
 import Help from "./pages/help";
 import SidebarLink from "./components/sidebar/link";
 import Autocomplete from "./pages/terminal/autocomplete";
-import Chat from "./pages/terminal/chat";
 import Inline from "./pages/terminal/inline";
 import Onboarding from "./pages/onboarding";
 import Preferences from "./pages/settings/preferences";
@@ -135,7 +134,6 @@ function Router() {
           <Route path="help" element={<Help />} />
           <Route path="whats-new" element={<WhatsNew />} />
           <Route path="autocomplete" element={<Autocomplete />} />
-          <Route path="chat" element={<Chat />} />
           <Route path="inline" element={<Inline />} />
           <Route path="keybindings" element={<Keybindings />} />
           {platformInfo && platformInfo.os === Platform.Os.MACOS && (
@@ -182,11 +180,6 @@ const useNavData = () => {
       type: "link",
       name: "CLI Completions",
       link: "/autocomplete",
-    },
-    {
-      type: "link",
-      name: "Chat",
-      link: "/chat",
     },
     {
       type: "link",

@@ -851,8 +851,6 @@ def build(
     else:
         signing_data = None
 
-    cargo_features: Mapping[str, Sequence[str]] = {CLI_PACKAGE_NAME: ["wayland"]}
-
     match stage_name:
         case "prod" | None:
             info("Building for prod")
@@ -862,7 +860,6 @@ def build(
             raise ValueError(f"Unknown stage name: {stage_name}")
 
     info(f"Release: {release}")
-    info(f"Cargo features: {cargo_features}")
     info(f"Signing app: {signing_data is not None}")
     info(f"Variants: {[variant.name for variant in variants]}")
 
@@ -881,10 +878,10 @@ def build(
 
     if run_test:
         info("Running cargo tests")
-        run_cargo_tests(variants=variants, features=cargo_features, target=cargo_test_target)
+        run_cargo_tests(variants=variants, target=cargo_test_target)
 
     if run_lints:
-        run_clippy(variants=variants, features=cargo_features, target=cargo_test_target)
+        run_clippy(variants=variants, target=cargo_test_target)
 
     build_output: BuildOutput = {}
     for variant in variants:
@@ -896,7 +893,6 @@ def build(
             release=release,
             package=CLI_PACKAGE_NAME,
             output_name=CLI_BINARY_NAME,
-            features=cargo_features,
             targets=targets,
         )
 
@@ -906,7 +902,6 @@ def build(
             release=release,
             package=PTY_PACKAGE_NAME,
             output_name=PTY_BINARY_NAME,
-            features=cargo_features,
             targets=targets,
         )
 
@@ -921,7 +916,6 @@ def build(
                 pty_path=pty_path,
                 npm_packages=npm_packages,
                 signing_data=signing_data,
-                features=cargo_features,
                 targets=targets,
                 is_prod=stage_name == "prod" or stage_name is None,
             )
@@ -944,7 +938,6 @@ def build(
                     cli_path=cli_path,
                     pty_path=pty_path,
                     npm_packages=npm_packages,
-                    features=cargo_features,
                     linux_packages=linux_packages,
                 )
                 build_output[variant] = BinaryPaths(cli_path=cli_path, pty_path=pty_path)

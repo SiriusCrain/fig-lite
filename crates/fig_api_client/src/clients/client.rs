@@ -409,12 +409,6 @@ pub async fn consolas_generate_recommendation(
 
 #[cfg(test)]
 mod tests {
-    use amzn_codewhisperer_client::types::{
-        ChatAddMessageEvent,
-        IdeCategory,
-        OperatingSystem,
-    };
-
     use super::*;
     use crate::model::{
         FileContext,
@@ -450,24 +444,5 @@ mod tests {
             .await
             .unwrap();
         client.list_customizations().await.unwrap();
-        client
-            .send_telemetry_event(
-                TelemetryEvent::ChatAddMessageEvent(
-                    ChatAddMessageEvent::builder()
-                        .conversation_id("<conversation-id>")
-                        .message_id("<message-id>")
-                        .build()
-                        .unwrap(),
-                ),
-                UserContext::builder()
-                    .ide_category(IdeCategory::Cli)
-                    .operating_system(OperatingSystem::Linux)
-                    .product("<product>")
-                    .build()
-                    .unwrap(),
-                OptOutPreference::OptIn,
-            )
-            .await
-            .unwrap();
     }
 }

@@ -1,97 +1,78 @@
-# Amazon Q Developer CLI Codebase Summary
+# fig-lite Codebase Summary
 
 ## Overview
 
-The **Amazon Q Developer CLI** is part of a monorepo that houses the core code for the Amazon Q Developer desktop application and command-line interface. Amazon Q Developer is an AI assistant built by AWS to help developers with various tasks.
+**fig-lite** is a Linux-focused fork of the Amazon Q Developer CLI (formerly Fig), stripped down to the shell autocomplete surface. All chat / translate / Amazon-cloud assistant features have been removed. The product is a desktop app (Tauri/tao/wry AppImage) plus a figterm PTY shim plus a CLI, together delivering spec-driven autocomplete in the terminal.
 
 ## Key Components
 
-1. **q_cli**: The main CLI tool that allows users to interact with Amazon Q Developer from the command line
-2. **fig_desktop**: The Rust desktop application that uses tao/wry for windowing and webviews
-3. **Web Applications**: React apps for autocomplete functionality and dashboard interface
-4. **IDE Extensions**: VSCode, JetBrains, and GNOME extensions
+1. **q_cli** (`crates/q_cli`) — CLI entry point. Dispatches `init`, `internal`, `completion`, `hook`, diagnostics, install, settings.
+2. **fig_desktop** (`crates/fig_desktop`) — Tauri-style desktop shell (tao + wry) hosting the autocomplete popup window. Bundled as an AppImage on Linux.
+3. **figterm** (`crates/figterm`) — PTY shim built on `alacritty_terminal` that sits between the user's shell and the real terminal, parsing the edit buffer to drive suggestions.
+4. **Web apps** (`packages/`) — React/Vite dashboard (`packages/dashboard-app`) and autocomplete UI; built via pnpm + turborepo.
+5. **IDE integrations** (`crates/fig_integrations`, `extensions/`) — VSCode, JetBrains, GNOME shell extension IPC (Unix socket + gdbus/zbus).
 
 ## Project Structure
 
-- `crates/` - Contains all internal Rust crates
-- `packages/` - Contains all internal npm packages
-- `proto/` - Protocol buffer message specifications for inter-process communication
-- `extensions/` - IDE extensions
-- `build-scripts/` - Python scripts for building, signing, and testing
-- `tests/` - Integration tests
+- `crates/` — Internal Rust crates (see below)
+- `packages/` — pnpm workspace with dashboard + autocomplete UI
+- `proto/` — Protocol buffer IPC messages
+- `extensions/` — IDE extensions
+- `build-scripts/` — Python build orchestration (`main.py`, `build.py`, `rust.py`, `const.py`, `util.py`, `signing.py`)
+- `build-config/` — buildspec YAML for CI
+- `bundle/` — Linux AppImage bundling assets
+- `cloned_spec/` — Local mirror of the withfig/autocomplete specs (replaces the AWS CDN fetch)
+- `tests/` — Integration tests
 
-## Amazon Q Chat Implementation
+## Rust workspace
 
-### Core Components
+### Autocomplete API path
+- `fig_api_client` — Thin wrapper over `amzn-codewhisperer-client` exposing `generate_completions`, customization/profile listing, and telemetry-event upload. Chat/streaming types were removed in the fig-lite fork.
+- `amzn-codewhisperer-client` — Smithy-generated AWS SDK (CodeWhisperer). Used for the completions RPC. Many chat/agentic operations are unused but not yet pruned from the generated code.
+- `amzn-consolas-client` — Secondary completion backend.
+- `amzn-toolkit-telemetry-client` / `aws-toolkit-telemetry-definitions` — Metric posting.
 
-1. **Chat Module Structure**
-   - The chat functionality is implemented in the `q_cli/src/cli/chat` directory
-   - Main components include conversation state management, input handling, response parsing, and tool execution
+### Auth
+- `fig_auth` — Builder ID + PKCE OAuth flow; secret store backed by the system keyring.
 
-2. **User Interface**
-   - Provides an interactive terminal-based chat interface
-   - Uses `rustyline` for command-line input with features like history, completion, and highlighting
-   - Displays a welcome message with usage suggestions and available commands
-   - Supports special commands like `/help`, `/quit`, `/clear`, and `/acceptall`
+### Settings & state
+- `fig_settings` — SQLite-backed settings/state with migrations (`r2d2`/`rusqlite`).
+- `fig_os_shim` — OS abstraction layer used by tests.
 
-3. **Conversation Management**
-   - `ConversationState` class maintains the chat history and context
-   - Tracks user messages, assistant responses, and tool executions
-   - Manages conversation history with a maximum limit (100 messages)
-   - Preserves environmental context like working directory and shell state
+### Telemetry
+- `fig_telemetry_core` — Event type definitions + global emitter trait.
+- `fig_telemetry` — Runtime emitter that dispatches to CodeWhisperer and the toolkit metrics endpoint.
 
-4. **Input Handling**
-   - `InputSource` handles reading user input with support for multi-line inputs
-   - `Command` parser interprets user input as questions, commands, or special commands
-   - Supports command completion for special commands like `/help` and `/clear`
+### IPC
+- `fig_proto` — Protobuf message definitions.
+- `fig_ipc` — Unix-socket client/server helpers.
+- `fig_remote_ipc` — Cross-host IPC for SSH scenarios.
+- `fig_desktop_api` — Bridge exposing Rust functionality to the webview side.
 
-5. **Response Parsing**
-   - `ResponseParser` processes streaming responses from the Amazon Q service
-   - Handles markdown formatting and syntax highlighting
-   - Manages tool use requests from the assistant
+### Install / integrations
+- `fig_install` — Self-update + shell integration installer.
+- `fig_integrations` — Per-shell (bash/zsh/fish) and per-IDE (VSCode/JetBrains/GNOME) integration management.
 
-### Tool Integration
+### Support
+- `fig_util` — Shared helpers (directories, terminal/shell detection, system info).
+- `fig_log` — Tracing setup.
+- `fig_request` — HTTP client wrapper.
+- `fig_aws_common` — Shared AWS SDK glue.
+- `alacritty_terminal` — Vendored terminal-grid parser used by figterm.
 
-The chat implementation includes a robust tool system that allows Amazon Q to interact with the user's environment:
+## Build
 
-1. **Available Tools**:
-   - `fs_read`: Reads files or lists directories (similar to `cat` or `ls`)
-   - `fs_write`: Creates or modifies files with various operations (create, append, replace)
-   - `execute_bash`: Executes shell commands in the user's environment
-   - `use_aws`: Makes AWS CLI API calls with specified services and operations
+- **Docker-based reproducible build:** `build.sh` → `Dockerfile.build` → `build-scripts/main.py`.
+- **Cargo incremental caching** keyed off the git commit date (`AMAZON_Q_BUILD_DATETIME`) so rebuilds at a stable commit reuse fingerprints.
+- **Tauri bundling** is split from the cargo build; AppImage is skipped when the existing bundle is newer than the freshly-built binary.
 
-2. **Tool Execution Flow**:
-   - Amazon Q requests to use a tool via the API
-   - The CLI parses the request and validates parameters
-   - The tool is executed with appropriate permissions checks
-   - Results are returned to Amazon Q for further processing
-   - The conversation continues with the tool results incorporated
+## Removed features (relative to upstream)
 
-3. **Security Considerations**:
-   - Tools that modify the system (like `fs_write` and `execute_bash`) require user confirmation
-   - The `/acceptall` command can toggle automatic acceptance for the session
-   - Tool responses are limited to prevent excessive output (30KB limit)
+| Feature | Status |
+|---|---|
+| `q chat` / qchat binary | Removed (Rust code + dashboard UI) |
+| `q translate` | Removed end-to-end (`arboard`, `region_check`, `wayland` feature, `TranslationActioned` telemetry) |
+| Chat streaming clients (`amzn-*-streaming-client`) | Crates deleted from workspace |
+| `semantic_search_client` | Removed as orphan |
 
-### Technical Implementation
-
-1. **API Communication**:
-   - Uses a streaming client to communicate with the Amazon Q service
-   - Handles asynchronous responses and tool requests
-   - Manages timeouts and connection errors
-
-2. **Display Formatting**:
-   - Uses `crossterm` for terminal control and styling
-   - Implements markdown parsing and syntax highlighting
-   - Displays spinners during processing
-
-3. **Error Handling**:
-   - Comprehensive error types and handling for various failure scenarios
-   - Graceful degradation when services are unavailable
-   - Signal handling for user interruptions
-
-4. **Configuration**:
-   - Respects user settings for editor mode (vi/emacs)
-   - Region checking for service availability
-   - Telemetry for usage tracking
-
-The implementation provides a seamless interface between the user and Amazon Q's AI capabilities, with powerful tools that allow the assistant to help with file operations, command execution, and AWS service interactions, all within a terminal-based chat interface.
+Unused operations still present inside `amzn-codewhisperer-client` (task-assist, transformation, code-analysis, code-fix, agentic chat, etc.) have been left in place because the crate is Smithy-generated; a targeted prune is tracked separately.

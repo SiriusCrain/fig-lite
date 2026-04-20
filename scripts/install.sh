@@ -477,7 +477,6 @@ main() {
 
     echo "Next steps:"
     echo "1. Run: $COMMAND_NAME --help to get started"
-    echo "2. Run: $COMMAND_NAME chat to start an interactive session"
     echo
 }
 

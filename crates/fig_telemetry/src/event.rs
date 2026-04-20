@@ -111,18 +111,6 @@ pub(crate) mod tests {
         })
         .await
     }
-    async fn translation_actioned() -> AppTelemetryEvent {
-        AppTelemetryEvent::new(EventType::TranslationActioned {
-            latency: Duration::from_millis(500),
-            suggestion_state: SuggestionState::Accept,
-            terminal: Some("vscode".into()),
-            terminal_version: Some("1.0".into()),
-            shell: Some("bash".into()),
-            shell_version: Some("4.4".into()),
-        })
-        .await
-    }
-
     async fn cli_subcommand_executed() -> AppTelemetryEvent {
         AppTelemetryEvent::new(EventType::CliSubcommandExecuted {
             subcommand: "test".into(),
@@ -160,29 +148,6 @@ pub(crate) mod tests {
         AppTelemetryEvent::new(EventType::FigUserMigrated {}).await
     }
 
-    async fn chat_start() -> AppTelemetryEvent {
-        AppTelemetryEvent::new(EventType::ChatStart {
-            conversation_id: "XXX".into(),
-        })
-        .await
-    }
-
-    async fn chat_end() -> AppTelemetryEvent {
-        AppTelemetryEvent::new(EventType::ChatEnd {
-            conversation_id: "XXX".into(),
-        })
-        .await
-    }
-
-    async fn chat_added_message() -> AppTelemetryEvent {
-        AppTelemetryEvent::new(EventType::ChatAddedMessage {
-            conversation_id: "XXX".into(),
-            message_id: "YYY".into(),
-            context_file_length: Some(5),
-        })
-        .await
-    }
-
     async fn migrate_client_id_message() -> AppTelemetryEvent {
         AppTelemetryEvent::new(EventType::MigrateClientId {
             old_client_id: "XXX".into(),
@@ -196,15 +161,11 @@ pub(crate) mod tests {
             refresh_credentials().await,
             completion_inserted().await,
             inline_shell_actioned().await,
-            translation_actioned().await,
             cli_subcommand_executed().await,
             doctor_check_failed().await,
             dashboard_page_viewed().await,
             menu_bar_actioned().await,
             fig_user_migrated().await,
-            chat_start().await,
-            chat_end().await,
-            chat_added_message().await,
             migrate_client_id_message().await,
         ]
     }
