@@ -282,6 +282,7 @@ mod tests {
             preexec: Some(false),
             osc_lock: Some(true),
             alias: Some("alias abc='abc d'\n".into()),
+            terminal_pid: None,
         };
         let hook = hooks::new_edit_buffer_hook(Some(ctx), "test", 2, 3, None);
         hooks::hook_to_message(hook)

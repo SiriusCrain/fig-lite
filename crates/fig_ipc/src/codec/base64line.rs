@@ -137,6 +137,7 @@ mod tests {
                         preexec: Some(false),
                         osc_lock: Some(false),
                         alias: Some(ALIAS.into()),
+                        terminal_pid: None,
                     }),
                 })),
             })),
