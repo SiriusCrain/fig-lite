@@ -162,7 +162,6 @@ where
                 AuthStartPkceAuthorizationRequest,
                 AuthStatusRequest,
                 CheckForUpdatesRequest,
-                CodewhispererListCustomizationRequest,
                 ContentsOfDirectoryRequest,
                 CreateDirectoryRequest,
                 DestinationOfSymbolicLinkRequest,
@@ -173,7 +172,6 @@ where
                 HistoryQueryRequest,
                 InsertTextRequest,
                 InstallRequest,
-                ListAvailableProfilesRequest,
                 NotificationRequest,
                 OnboardingRequest,
                 OpenInExternalApplicationRequest,
@@ -181,7 +179,6 @@ where
                 PositionWindowRequest,
                 ReadFileRequest,
                 RunProcessRequest,
-                SetProfileRequest,
                 UpdateApplicationPropertiesRequest,
                 UpdateApplicationRequest,
                 UpdateLocalStateRequest,
@@ -241,8 +238,6 @@ where
                     auth::builder_id_start_device_authorization(request, &ctx).await
                 },
                 AuthBuilderIdPollCreateTokenRequest(request) => auth::builder_id_poll_create_token(request, &ctx).await,
-                // codewhisperer api
-                CodewhispererListCustomizationRequest(request) => codewhisperer::list_customization(request).await,
                 // other
                 OpenInExternalApplicationRequest(request) => other::open_in_external_application(request).await,
                 PingRequest(request) => other::ping(request),
@@ -250,8 +245,6 @@ where
                 CheckForUpdatesRequest(request) => update::check_for_updates(request).await,
                 GetPlatformInfoRequest(request) => platform::get_platform_info(request, &ctx).await,
                 UserLogoutRequest(request) => event_handler.user_logout(request!(request)).await,
-                ListAvailableProfilesRequest(request) => profile::list_available_profiles(request).await,
-                SetProfileRequest(request) => profile::set_profile(request).await,
             }
         },
         None => {

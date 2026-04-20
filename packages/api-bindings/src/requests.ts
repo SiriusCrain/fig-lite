@@ -26,9 +26,6 @@ import {
   CheckForUpdatesRequest,
   CheckForUpdatesRequestSchema,
   CheckForUpdatesResponse,
-  CodewhispererListCustomizationRequest,
-  CodewhispererListCustomizationRequestSchema,
-  CodewhispererListCustomizationResponse,
   ContentsOfDirectoryRequest,
   ContentsOfDirectoryRequestSchema,
   ContentsOfDirectoryResponse,
@@ -56,9 +53,6 @@ import {
   InstallRequest,
   InstallRequestSchema,
   InstallResponse,
-  ListAvailableProfilesRequest,
-  ListAvailableProfilesRequestSchema,
-  ListAvailableProfilesResponse,
   NotificationRequest,
   NotificationRequestSchema,
   OnboardingRequest,
@@ -77,8 +71,6 @@ import {
   RunProcessRequest,
   RunProcessRequestSchema,
   RunProcessResponse,
-  SetProfileRequest,
-  SetProfileRequestSchema,
   UpdateApplicationPropertiesRequest,
   UpdateApplicationPropertiesRequestSchema,
   UpdateApplicationRequest,
@@ -501,38 +493,6 @@ export async function sendPingRequest(
   });
 }
 
-export async function sendCodewhispererListCustomizationRequest(
-  request: Omit<
-    CodewhispererListCustomizationRequest,
-    "$typeName" | "$unknown"
-  >,
-): Promise<CodewhispererListCustomizationResponse> {
-  return new Promise((resolve, reject) => {
-    sendMessage(
-      {
-        case: "codewhispererListCustomizationRequest",
-        value: create(CodewhispererListCustomizationRequestSchema, request),
-      },
-      (response) => {
-        switch (response?.case) {
-          case "codewhispererListCustomizationResponse":
-            resolve(response.value);
-            break;
-          case "error":
-            reject(Error(response.value));
-            break;
-          default:
-            reject(
-              Error(
-                `Invalid response '${response?.case}' for 'CodewhispererListCustomizationRequest'`,
-              ),
-            );
-        }
-      },
-    );
-  });
-}
-
 export async function sendAuthStartPkceAuthorizationRequest(
   request: Omit<AuthStartPkceAuthorizationRequest, "$typeName" | "$unknown">,
 ): Promise<AuthStartPkceAuthorizationResponse> {
@@ -641,35 +601,6 @@ export async function sendGetPlatformInfoRequest(
             reject(
               Error(
                 `Invalid response '${response?.case}' for 'GetPlatformInfoRequest'`,
-              ),
-            );
-        }
-      },
-    );
-  });
-}
-
-export async function sendListAvailableProfilesRequest(
-  request: Omit<ListAvailableProfilesRequest, "$typeName" | "$unknown">,
-): Promise<ListAvailableProfilesResponse> {
-  return new Promise((resolve, reject) => {
-    sendMessage(
-      {
-        case: "listAvailableProfilesRequest",
-        value: create(ListAvailableProfilesRequestSchema, request),
-      },
-      (response) => {
-        switch (response?.case) {
-          case "listAvailableProfilesResponse":
-            resolve(response.value);
-            break;
-          case "error":
-            reject(Error(response.value));
-            break;
-          default:
-            reject(
-              Error(
-                `Invalid response '${response?.case}' for 'ListAvailableProfilesRequest'`,
               ),
             );
         }
@@ -1076,35 +1007,6 @@ export async function sendDragWindowRequest(
             reject(
               Error(
                 `Invalid response '${response?.case}' for 'DragWindowRequest'`,
-              ),
-            );
-        }
-      },
-    );
-  });
-}
-
-export async function sendSetProfileRequest(
-  request: Omit<SetProfileRequest, "$typeName" | "$unknown">,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    sendMessage(
-      {
-        case: "setProfileRequest",
-        value: create(SetProfileRequestSchema, request),
-      },
-      (response) => {
-        switch (response?.case) {
-          case "success":
-            resolve();
-            break;
-          case "error":
-            reject(Error(response.value));
-            break;
-          default:
-            reject(
-              Error(
-                `Invalid response '${response?.case}' for 'SetProfileRequest'`,
               ),
             );
         }

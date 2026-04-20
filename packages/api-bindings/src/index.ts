@@ -1,5 +1,4 @@
 import * as Auth from "./auth.js";
-import * as Codewhisperer from "./codewhisperer.js";
 import * as EditBufferNotifications from "./editbuffer.js";
 import * as Event from "./event.js";
 import * as Fig from "@aws/amazon-q-developer-cli-proto/fig";
@@ -17,11 +16,9 @@ import * as State from "./state.js";
 import * as Types from "./types.js";
 import * as User from "./user.js";
 import * as WindowPosition from "./position.js";
-import * as Profile from "./profile.js";
 
 const lib = {
   Auth,
-  Codewhisperer,
   EditBufferNotifications,
   Event,
   fs,
@@ -38,12 +35,10 @@ const lib = {
   Types,
   User,
   WindowPosition,
-  Profile,
 };
 
 export {
   Auth,
-  Codewhisperer,
   EditBufferNotifications,
   Event,
   Fig,
@@ -61,7 +56,6 @@ export {
   Types,
   User,
   WindowPosition,
-  Profile,
 };
 
 declare global {

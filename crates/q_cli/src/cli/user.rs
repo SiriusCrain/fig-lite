@@ -15,13 +15,10 @@ use clap::{
     Subcommand,
 };
 use crossterm::style::Stylize;
-use dialoguer::Select;
 use eyre::{
     Result,
     bail,
 };
-use fig_api_client::list_available_profiles;
-use fig_api_client::profile::Profile;
 use fig_auth::builder_id::{
     PollCreateToken,
     TokenType,
@@ -44,10 +41,7 @@ use tokio::signal::unix::{
     SignalKind,
     signal,
 };
-use tracing::{
-    error,
-    info,
-};
+use tracing::error;
 
 use super::OutputFormat;
 use crate::util::spinner::{
@@ -55,7 +49,6 @@ use crate::util::spinner::{
     SpinnerComponent,
 };
 use crate::util::{
-    assert_logged_in,
     choose,
     input,
 };
@@ -72,8 +65,6 @@ pub enum RootUserSubcommand {
         #[arg(long, short, value_enum, default_value_t)]
         format: OutputFormat,
     },
-    /// Show the profile associated with this idc user
-    Profile,
 }
 
 #[derive(Args, Debug, PartialEq, Eq, Clone, Default)]
@@ -175,17 +166,6 @@ impl RootUserSubcommand {
                             },
                         );
 
-                        if matches!(token.token_type(), TokenType::IamIdentityCenter) {
-                            if let Ok(Some(profile)) = fig_settings::state::get::<fig_api_client::profile::Profile>(
-                                "api.codewhisperer.profile",
-                            ) {
-                                color_print::cprintln!(
-                                    "\n<em>Profile:</em>\n{}\n{}\n",
-                                    profile.profile_name,
-                                    profile.arn
-                                );
-                            }
-                        }
                         Ok(ExitCode::SUCCESS)
                     },
                     _ => {
@@ -193,19 +173,6 @@ impl RootUserSubcommand {
                         Ok(ExitCode::FAILURE)
                     },
                 }
-            },
-            Self::Profile => {
-                assert_logged_in().await?;
-
-                if let Ok(Some(token)) = fig_auth::builder_id_token().await {
-                    if matches!(token.token_type(), TokenType::BuilderId) {
-                        bail!("This command is only available for IAM Identity Center users");
-                    }
-                }
-
-                select_profile_interactive(false).await?;
-
-                Ok(ExitCode::SUCCESS)
             },
         }
     }
@@ -310,10 +277,6 @@ pub async fn login_interactive(args: LoginArgs) -> Result<()> {
         error!(%err, "Failed to send login command.");
     }
 
-    if login_method == AuthMethod::IdentityCenter {
-        select_profile_interactive(true).await?;
-    }
-
     eprintln!("Logged in successfully");
 
     Ok(())
@@ -374,67 +337,4 @@ async fn try_device_authorization(
         };
     }
     Ok(())
-}
-
-async fn select_profile_interactive(whoami: bool) -> Result<()> {
-    let mut spinner = Spinner::new(vec![
-        SpinnerComponent::Spinner,
-        SpinnerComponent::Text(" Fetching profiles...".into()),
-    ]);
-    let profiles = list_available_profiles().await;
-    if profiles.is_empty() {
-        info!("Available profiles was empty");
-        return Ok(());
-    }
-
-    if whoami && profiles.len() == 1 {
-        spinner.stop_with_message(String::new());
-        return Ok(fig_settings::state::set_value(
-            "api.codewhisperer.profile",
-            serde_json::to_value(&profiles[0])?,
-        )?);
-    }
-
-    let mut items: Vec<String> = profiles
-        .iter()
-        .map(|p| format!("{} (arn: {})", p.profile_name, p.arn))
-        .collect();
-    let active_profile: Option<Profile> = fig_settings::state::get("api.codewhisperer.profile")?;
-
-    if let Some(default_idx) = active_profile
-        .as_ref()
-        .and_then(|active| profiles.iter().position(|p| p.arn == active.arn))
-    {
-        items[default_idx] = format!("{} (active)", items[default_idx].as_str());
-    }
-
-    spinner.stop_with_message(String::new());
-    let selected = Select::with_theme(&crate::util::dialoguer_theme())
-        .with_prompt("Select an IAM Identity Center profile")
-        .items(&items)
-        .default(0)
-        .interact_opt()?;
-
-    match selected {
-        Some(i) => {
-            let chosen = &profiles[i];
-            let profile = serde_json::to_value(chosen)?;
-            eprintln!("Set profile: {}\n", chosen.profile_name.as_str().green());
-            fig_settings::state::set_value("api.codewhisperer.profile", profile)?;
-            fig_settings::state::remove_value("api.selectedCustomization")?;
-        },
-        None => {
-            bail!("No profile selected.\n");
-        },
-    }
-
-    Ok(())
-}
-
-mod tests {
-    #[test]
-    #[ignore]
-    fn unset_profile() {
-        fig_settings::state::remove_value("api.codewhisperer.profile").unwrap();
-    }
 }

@@ -6,7 +6,7 @@ import {
   Native,
 } from "@aws/amazon-q-developer-cli-api-bindings";
 import { useEffect, useState } from "react";
-import Tab, { ProfileTab } from "./tabs";
+import Tab from "./tabs";
 import { useLocalStateZodDefault } from "@/hooks/store/useState";
 import { z } from "zod";
 import { Link } from "@/components/ui/link";
@@ -52,7 +52,6 @@ export default function LoginModal({ next }: { next: () => void }) {
     z.boolean(),
     false,
   );
-  const [showProfileTab, setShowProfileTab] = useState(false);
   const auth = useAuth();
   const refreshAuth = useRefreshAuth();
 
@@ -102,12 +101,8 @@ export default function LoginModal({ next }: { next: () => void }) {
     })
       .then(() => {
         Internal.sendWindowFocusRequest({});
-        if (tab == "iam") {
-          setShowProfileTab(true);
-        } else {
-          refreshAuth();
-          next();
-        }
+        refreshAuth();
+        next();
       })
       .catch((err) => {
         // If this promise was originally for some older request attempt,
@@ -163,23 +158,11 @@ export default function LoginModal({ next }: { next: () => void }) {
   }, [auth]);
 
   useEffect(() => {
-    if (loginState !== "logged in" || showProfileTab) return;
+    if (loginState !== "logged in") return;
     next();
-  }, [loginState, showProfileTab, next]);
+  }, [loginState, next]);
 
-  return showProfileTab ? (
-    <ProfileTab
-      next={() => {
-        refreshAuth();
-        setLoginState("logged in");
-        setShowProfileTab(false);
-      }}
-      back={() => {
-        setLoginState("not started");
-        setShowProfileTab(false);
-      }}
-    />
-  ) : (
+  return (
     <div className="flex flex-col items-center gap-8 gradient-q-secondary-light -m-10 pt-10 p-4 rounded-lg text-white">
       <div className="flex flex-col items-center gap-8">
         <Lockup />
