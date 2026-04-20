@@ -2852,7 +2852,6 @@ dependencies = [
  "clap",
  "crossterm",
  "dashmap",
- "fig_api_client",
  "fig_auth",
  "fig_install",
  "fig_ipc",

@@ -3,7 +3,6 @@ mod cleanup;
 pub mod cli;
 mod event_handler;
 pub mod history;
-pub mod inline;
 pub mod input;
 pub mod interceptor;
 pub mod ipc;
@@ -941,10 +940,8 @@ fn figterm_main(command: Option<&[String]>) -> Result<()> {
                                 main_loop_tx.clone(),
                                 sender.clone(),
                                 &term,
-                                &history_sender,
                                 &mut master,
                                 &mut key_interceptor,
-                                &session_id,
                             ).await?;
                         }
                         Err(err) => {
