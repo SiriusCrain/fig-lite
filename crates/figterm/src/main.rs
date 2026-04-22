@@ -520,8 +520,7 @@ fn launch_shell(command: Option<&[String]>) -> Result<()> {
         }
     }
 
-    execvp(&cargs[0], &cargs).expect("Failed to execvp");
-    unreachable!()
+    execvp(&cargs[0], &cargs).map(|_| ()).context("Failed to execvp")
 }
 
 fn figterm_main(command: Option<&[String]>) -> Result<()> {

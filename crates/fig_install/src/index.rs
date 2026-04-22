@@ -293,9 +293,10 @@ pub enum UpdateCondition {
     AllowedAutoUpdateProductNames(Vec<ProductName>),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumString, Display)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumString, Display, Default)]
 pub enum ProductName {
     #[strum(serialize = "Amazon Q")]
+    #[default]
     AmazonQ,
     #[strum(default)]
     Unknown(String),
@@ -323,12 +324,6 @@ impl<'de> Deserialize<'de> for ProductName {
             "Amazon Q" => Ok(ProductName::AmazonQ),
             _ => Ok(ProductName::Unknown(s)),
         }
-    }
-}
-
-impl Default for ProductName {
-    fn default() -> Self {
-        Self::AmazonQ
     }
 }
 

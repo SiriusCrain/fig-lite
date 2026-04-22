@@ -5,7 +5,6 @@ use anstream::println;
 use clap::{
     Args,
     Subcommand,
-    arg,
 };
 use crossterm::style::Stylize;
 use eyre::{
