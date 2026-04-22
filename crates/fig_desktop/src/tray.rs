@@ -13,7 +13,14 @@ use fig_util::manifest::{
     Variant,
 };
 use fig_util::url::USER_MANUAL;
-use muda::{
+use tao::event_loop::ControlFlow;
+use tracing::{
+    debug,
+    error,
+    trace,
+    warn,
+};
+use tray_icon::menu::{
     IconMenuItem,
     Menu,
     MenuEvent,
@@ -21,13 +28,6 @@ use muda::{
     MenuItemBuilder,
     PredefinedMenuItem,
     Submenu,
-};
-use tao::event_loop::ControlFlow;
-use tracing::{
-    debug,
-    error,
-    trace,
-    warn,
 };
 use tray_icon::{
     Icon,
@@ -370,12 +370,12 @@ pub fn get_context_menu() -> Menu {
 
 enum MenuElement {
     Info {
-        image_icon: Option<muda::Icon>,
+        image_icon: Option<tray_icon::menu::Icon>,
         text: Cow<'static, str>,
     },
     Entry {
         emoji_icon: Option<Cow<'static, str>>,
-        image_icon: Option<muda::Icon>,
+        image_icon: Option<tray_icon::menu::Icon>,
         text: Cow<'static, str>,
         id: Cow<'static, str>,
     },
@@ -390,7 +390,8 @@ enum MenuElement {
 impl MenuElement {
     fn info(image_icon: Option<(Vec<u8>, u32, u32)>, text: impl Into<Cow<'static, str>>) -> Self {
         Self::Info {
-            image_icon: image_icon.and_then(|(bytes, width, height)| muda::Icon::from_rgba(bytes, width, height).ok()),
+            image_icon: image_icon
+                .and_then(|(bytes, width, height)| tray_icon::menu::Icon::from_rgba(bytes, width, height).ok()),
             text: text.into(),
         }
     }
@@ -403,7 +404,8 @@ impl MenuElement {
     ) -> Self {
         Self::Entry {
             emoji_icon,
-            image_icon: image_icon.and_then(|(bytes, width, height)| muda::Icon::from_rgba(bytes, width, height).ok()),
+            image_icon: image_icon
+                .and_then(|(bytes, width, height)| tray_icon::menu::Icon::from_rgba(bytes, width, height).ok()),
             text: text.into(),
             id: id.into(),
         }
@@ -422,7 +424,7 @@ impl MenuElement {
                 let menu_item = IconMenuItem::new(
                     text,
                     false,
-                    image_icon.clone(), // Some(muda::Icon::from_rgba(bytes, width, height).unwrap()),
+                    image_icon.clone(), // Some(tray_icon::menu::Icon::from_rgba(bytes, width, height).unwrap()),
                     None,
                 );
                 menu.append(&menu_item).unwrap();
@@ -438,7 +440,7 @@ impl MenuElement {
                     ("linux", Some(emoji_icon)) => format!("{emoji_icon} {text}"),
                     _ => text.to_string(),
                 };
-                let menu_item = muda::IconMenuItemBuilder::new()
+                let menu_item = tray_icon::menu::IconMenuItemBuilder::new()
                     .text(text)
                     .id(MenuId::new(id))
                     .enabled(true)
@@ -467,7 +469,7 @@ impl MenuElement {
                 let menu_item = IconMenuItem::new(
                     text,
                     false,
-                    image_icon.clone(), // Some(muda::Icon::from_rgba(bytes, width, height).unwrap()),
+                    image_icon.clone(), // Some(tray_icon::menu::Icon::from_rgba(bytes, width, height).unwrap()),
                     None,
                 );
                 submenu.append(&menu_item).unwrap();

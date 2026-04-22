@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use fig_util::consts::PRODUCT_NAME;
 #[allow(unused_imports)]
-use muda::{
+use tray_icon::menu::{
     Menu,
     MenuEvent,
     Submenu,
@@ -23,7 +23,7 @@ const DASHBOARD_FORWARD: &str = "dashboard-forward";
 
 #[cfg(target_os = "macos")]
 pub fn menu_bar() -> Menu {
-    use muda::{
+    use tray_icon::menu::{
         MenuItemBuilder,
         PredefinedMenuItem,
         Submenu,

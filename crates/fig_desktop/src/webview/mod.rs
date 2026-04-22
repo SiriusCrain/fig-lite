@@ -27,7 +27,6 @@ use fig_util::{
     directories,
 };
 use fnv::FnvBuildHasher;
-use muda::MenuEvent;
 use regex::RegexSet;
 use tao::dpi::LogicalSize;
 use tao::event::{
@@ -52,6 +51,7 @@ use tracing::{
     trace,
     warn,
 };
+use tray_icon::menu::MenuEvent;
 use url::Url;
 use window::WindowState;
 use wry::{
@@ -663,7 +663,7 @@ pub fn build_dashboard(
         url.set_path(&page);
     }
 
-    let webview_builder = WebViewBuilder::with_web_context(web_context)
+    let webview_builder = WebViewBuilder::new_with_web_context(web_context)
         .with_url(url.as_str())
         .with_ipc_handler(move |payload| {
             proxy
@@ -690,7 +690,7 @@ pub fn build_dashboard(
             utils::wrap_custom_protocol(Arc::clone(&ctx), "api", DashboardId, api::handle),
         )
         .with_navigation_handler(navigation_handler(DASHBOARD_ID, &[r"^localhost$", r"^127\.0\.0\.1$"]))
-        .with_initialization_script(&javascript_init(true))
+        .with_initialization_script(javascript_init(true))
         .with_clipboard(true)
         .with_hotkeys_zoom(true);
 
@@ -762,7 +762,7 @@ pub fn build_autocomplete(
 
     let proxy = event_loop.create_proxy();
 
-    let webview_builder = WebViewBuilder::with_web_context(web_context)
+    let webview_builder = WebViewBuilder::new_with_web_context(web_context)
         .with_url(autocomplete::url().as_str())
         .with_ipc_handler(move |payload| {
             proxy
@@ -801,7 +801,7 @@ pub fn build_autocomplete(
         )
         .with_devtools(true)
         .with_transparent(true)
-        .with_initialization_script(&javascript_init(true))
+        .with_initialization_script(javascript_init(true))
         .with_navigation_handler(navigation_handler(AUTOCOMPLETE_ID, &[r"localhost$", r"^127\.0\.0\.1$"]))
         .with_clipboard(true)
         .with_hotkeys_zoom(true)
