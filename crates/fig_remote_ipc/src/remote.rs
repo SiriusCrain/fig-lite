@@ -185,21 +185,21 @@ pub async fn handle_remote_ipc(
                                 }))
                             };
 
-                            if matches!(result, Some(clientbound::Packet::HandshakeResponse(HandshakeResponse { success: true }))) {
-                                if let Some(parent_id) = handshake.parent_id {
-                                    let inner = figterm_state.inner.lock();
-                                    let sessions = inner.linked_sessions.values();
-                                    for session in sessions {
-                                        if let Some(ref writer) = session.writer {
-                                            let notification = clientbound::Packet::NotifyChildSessionStarted(
-                                                clientbound::NotifyChildSessionStarted { parent_id: parent_id.clone() }
-                                            );
-                                            writer.send(
-                                                Clientbound {
-                                                    packet: Some(notification)
-                                                }
-                                            ).ok();
-                                        }
+                            if matches!(result, Some(clientbound::Packet::HandshakeResponse(HandshakeResponse { success: true })))
+                                && let Some(parent_id) = handshake.parent_id
+                            {
+                                let inner = figterm_state.inner.lock();
+                                let sessions = inner.linked_sessions.values();
+                                for session in sessions {
+                                    if let Some(ref writer) = session.writer {
+                                        let notification = clientbound::Packet::NotifyChildSessionStarted(
+                                            clientbound::NotifyChildSessionStarted { parent_id: parent_id.clone() }
+                                        );
+                                        writer.send(
+                                            Clientbound {
+                                                packet: Some(notification)
+                                            }
+                                        ).ok();
                                     }
                                 }
                             }
@@ -279,13 +279,13 @@ pub async fn handle_remote_ipc(
                             nonce,
                             response: Some(response),
                         })) => {
-                            if initialized {
-                                if let Some(nonce) = nonce {
-                                    figterm_state
-                                        .with(&session_id, |session| session.response_map.remove(&nonce))
-                                        .flatten()
-                                        .map(|channel| channel.send(response));
-                                }
+                            if initialized
+                                && let Some(nonce) = nonce
+                            {
+                                figterm_state
+                                    .with(&session_id, |session| session.response_map.remove(&nonce))
+                                    .flatten()
+                                    .map(|channel| channel.send(response));
                             }
                             None
                         },
@@ -453,8 +453,8 @@ async fn handle_commands(
         };
 
         figterm_state.with(&session_id, |session| {
-            if let Some(writer) = &session.writer {
-                if writer
+            if let Some(writer) = &session.writer
+                && writer
                     .try_send(Clientbound {
                         packet: Some(clientbound::Packet::Request(clientbound::Request {
                             request: Some(request),
@@ -462,9 +462,8 @@ async fn handle_commands(
                         })),
                     })
                     .is_ok()
-                {
-                    session.last_receive = Instant::now();
-                };
+            {
+                session.last_receive = Instant::now();
             }
         })?;
     }

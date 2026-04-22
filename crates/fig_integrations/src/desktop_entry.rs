@@ -52,10 +52,10 @@ pub fn local_icon_path<Ctx: FsProvider>(ctx: &Ctx) -> Result<PathBuf> {
 
 /// Helper to create the parent directory of `path` if it doesn't already exist.
 async fn create_parent(fs: &Fs, path: impl AsRef<Path>) -> Result<()> {
-    if let Some(parent) = path.as_ref().parent() {
-        if !parent.is_dir() {
-            fs.fs().create_dir_all(parent).await?;
-        }
+    if let Some(parent) = path.as_ref().parent()
+        && !parent.is_dir()
+    {
+        fs.fs().create_dir_all(parent).await?;
     }
     Ok(())
 }

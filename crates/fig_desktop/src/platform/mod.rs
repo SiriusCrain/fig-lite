@@ -112,14 +112,18 @@ impl PlatformState {
     }
 
     /// Record the latest cursor coordinates from figterm (Linux only).
+    /// Intended caller: GSE focus hook (not yet wired).
     #[cfg(target_os = "linux")]
+    #[allow(dead_code)]
     pub fn set_last_cursor_coords(&self, coords: (i32, i32, i32, i32, i32, i32)) {
         self.0.set_last_cursor_coords(coords);
     }
 
     /// If coords + active window are both known, emit an UpdateWindowGeometry event that
     /// places the autocomplete popup relative to the caret. Returns true if emitted.
+    /// Intended caller: GSE focus hook (not yet wired).
     #[cfg(target_os = "linux")]
+    #[allow(dead_code)]
     pub fn emit_caret_from_last_coords(&self, proxy: &EventLoopProxy) -> bool {
         self.0.emit_caret_from_last_coords(proxy)
     }

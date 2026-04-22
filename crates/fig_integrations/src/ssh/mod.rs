@@ -146,14 +146,14 @@ impl Integration for SshIntegration {
         }
 
         // Create the .ssh directory if it doesn't exist
-        if let Some(path) = self.path.parent() {
-            if !path.exists() {
-                let mut builder = DirBuilder::new();
-                builder.recursive(true);
-                #[cfg(unix)]
-                builder.mode(0o700);
-                builder.create(path)?;
-            }
+        if let Some(path) = self.path.parent()
+            && !path.exists()
+        {
+            let mut builder = DirBuilder::new();
+            builder.recursive(true);
+            #[cfg(unix)]
+            builder.mode(0o700);
+            builder.create(path)?;
         }
 
         let mut contents = if self.path.exists() {

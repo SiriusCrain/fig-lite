@@ -199,12 +199,12 @@ where
                             Ok(metadata) => metadata,
                             Err(_) => return Ok(ExtensionInstallationStatus::NotInstalled),
                         };
-                        if let Some(expected_version) = expected_version {
-                            if metadata.version != expected_version {
-                                return Ok(ExtensionInstallationStatus::UnexpectedVersion {
-                                    installed_version: metadata.version,
-                                });
-                            }
+                        if let Some(expected_version) = expected_version
+                            && metadata.version != expected_version
+                        {
+                            return Ok(ExtensionInstallationStatus::UnexpectedVersion {
+                                installed_version: metadata.version,
+                            });
                         }
                     },
                     Err(_) => return Ok(ExtensionInstallationStatus::NotInstalled),

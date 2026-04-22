@@ -150,12 +150,11 @@ async fn shell_init(shell: &Shell, when: &When, rcfile: &Option<String>) -> Resu
         to_source.push(assign_shell_variable(shell, "SHOULD_QTERM_LAUNCH", status, false));
     }
 
-    if let When::Post = when {
-        if fig_settings::state::get_bool_or("shell-integrations.immediateLogin", false)
-            && fig_settings::state::set_value("shell-integrations.immediateLogin", false).is_ok()
-        {
-            to_source.push(format!("{CLI_BINARY_NAME} login"));
-        }
+    if let When::Post = when
+        && fig_settings::state::get_bool_or("shell-integrations.immediateLogin", false)
+        && fig_settings::state::set_value("shell-integrations.immediateLogin", false).is_ok()
+    {
+        to_source.push(format!("{CLI_BINARY_NAME} login"));
     }
 
     let is_jetbrains_terminal = Terminal::is_jetbrains_terminal();

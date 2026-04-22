@@ -383,10 +383,10 @@ impl InternalSubcommand {
                 Err(_) => Ok(ExitCode::FAILURE),
             },
             InternalSubcommand::Hostname => {
-                if let Some(hostname) = System::host_name() {
-                    if write!(stdout(), "{hostname}").is_ok() {
-                        return Ok(ExitCode::SUCCESS);
-                    }
+                if let Some(hostname) = System::host_name()
+                    && write!(stdout(), "{hostname}").is_ok()
+                {
+                    return Ok(ExitCode::SUCCESS);
                 }
                 Ok(ExitCode::FAILURE)
             },

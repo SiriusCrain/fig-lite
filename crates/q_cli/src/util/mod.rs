@@ -80,10 +80,10 @@ pub fn glob_files(glob: &GlobSet, directory: impl AsRef<Path>) -> Result<Vec<Pat
         let file_name = path.file_name();
 
         // Check if the file matches the glob pattern
-        if let Some(file_name) = file_name {
-            if glob.is_match(file_name) {
-                files.push(path);
-            }
+        if let Some(file_name) = file_name
+            && glob.is_match(file_name)
+        {
+            files.push(path);
         }
     }
 
@@ -148,11 +148,10 @@ pub async fn quit_fig(verbose: bool) -> Result<ExitCode> {
             cfg_if! {
                 if #[cfg(target_os = "linux")] {
                     use fig_util::APP_PROCESS_NAME;
-                    if let Ok(output) = Command::new("killall").arg(APP_PROCESS_NAME).output() {
-                        if output.status.success() {
+                    if let Ok(output) = Command::new("killall").arg(APP_PROCESS_NAME).output()
+                        && output.status.success() {
                             return Ok(ExitCode::SUCCESS);
                         }
-                    }
                 } else if #[cfg(target_os = "macos")] {
                     if let Ok(info) = get_app_info() {
                         let pid = Regex::new(r"pid = (\S+)")

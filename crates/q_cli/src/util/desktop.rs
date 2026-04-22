@@ -202,25 +202,25 @@ fn launch_linux_desktop(ctx: std::sync::Arc<fig_os_shim::Context>, state: &fig_s
     use fig_util::APP_PROCESS_NAME;
     use tracing::error;
 
-    if state.get_bool_or("appimage.manageDesktopEntry", false) {
-        if let Some(exec) = EntryContents::from_path_sync(&ctx, local_entry_path(&ctx)?)?.get_field("Exec") {
-            match Command::new(exec)
-                .stdin(Stdio::null())
-                .stdout(Stdio::null())
-                .stderr(Stdio::null())
-                .spawn()
-            {
-                Ok(_) => return Ok(()),
-                Err(err) => {
-                    error!(
-                        ?err,
-                        "Unable to launch desktop app according to the local desktop entry."
-                    );
-                },
-            }
+    if state.get_bool_or("appimage.manageDesktopEntry", false)
+        && let Some(exec) = EntryContents::from_path_sync(&ctx, local_entry_path(&ctx)?)?.get_field("Exec")
+    {
+        match Command::new(exec)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+        {
+            Ok(_) => return Ok(()),
+            Err(err) => {
+                error!(
+                    ?err,
+                    "Unable to launch desktop app according to the local desktop entry."
+                );
+            },
         }
-        // Fall back to calling q-desktop if on the user's path
     }
+    // Fall back to calling q-desktop if on the user's path
 
     Command::new(APP_PROCESS_NAME)
         .stdin(Stdio::null())

@@ -264,7 +264,7 @@ where
             };
             let point = term.grid().cursor.point;
             let x = point.column.0 as i32;
-            let y = point.line.0 as i32;
+            let y = point.line.0;
             return Some(TerminalCursorCoordinates {
                 x,
                 y,
@@ -807,15 +807,14 @@ fn figterm_main(command: Option<&[String]>) -> Result<()> {
                                             false
                                         };
 
-                                        if !handled_action {
-                                            if let Some(bytes) = raw {
+                                        if !handled_action
+                                            && let Some(bytes) = raw {
                                                 if (event.key == KeyCode::Char('c') || event.key == KeyCode::Char('d'))
                                                     && event.modifiers == Modifiers::CTRL {
                                                     key_interceptor.reset();
                                                 }
                                                 write_buffer.extend(&bytes);
                                             }
-                                        }
                                     }
                                     Ok((_, InputEvent::Resized)) => {
                                         terminal.flush()?;

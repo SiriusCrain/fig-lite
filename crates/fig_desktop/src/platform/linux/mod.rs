@@ -118,8 +118,9 @@ pub struct PlatformStateImpl {
 
     /// Last cursor coordinates received from figterm (grid x/y, cell x/ypixel, cols/rows).
     /// Used so a fresh GSE focus hook can re-emit caret-relative positioning without
-    /// requiring a new keystroke.
+    /// requiring a new keystroke. Consumer (GSE focus hook) not yet wired.
     #[serde(skip)]
+    #[allow(dead_code, clippy::type_complexity)]
     pub(super) last_cursor_coords: Mutex<Option<(i32, i32, i32, i32, i32, i32)>>,
 
     /// When focus moves to a different terminal pid, this is armed with
@@ -351,6 +352,8 @@ impl PlatformStateImpl {
 
     /// Record the latest cursor coordinates from figterm. Used so a GSE focus hook
     /// can re-emit caret position without needing a fresh keystroke.
+    /// Intended caller: GSE focus hook (not yet wired).
+    #[allow(dead_code)]
     pub fn set_last_cursor_coords(&self, coords: (i32, i32, i32, i32, i32, i32)) {
         *self.last_cursor_coords.lock() = Some(coords);
     }
@@ -358,6 +361,8 @@ impl PlatformStateImpl {
     /// If we have a valid active window (from GSE) and a recent cursor position
     /// from figterm, emit an UpdateWindowGeometry event with the computed pixel
     /// caret position. Returns true if an event was sent.
+    /// Intended caller: GSE focus hook (not yet wired).
+    #[allow(dead_code)]
     pub fn emit_caret_from_last_coords(&self, proxy: &EventLoopProxy) -> bool {
         use fig_proto::local::caret_position_hook::Origin;
         use tao::dpi::{

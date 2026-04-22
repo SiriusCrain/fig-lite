@@ -177,10 +177,10 @@ pub async fn run_install(ctx: Arc<Context>, ignore_immediate_update: bool) {
     }
 
     // update ssh integration
-    if let Ok(ssh_integration) = SshIntegration::new() {
-        if let Err(err) = ssh_integration.reinstall().await {
-            error!(%err, "Failed updating ssh integration");
-        }
+    if let Ok(ssh_integration) = SshIntegration::new()
+        && let Err(err) = ssh_integration.reinstall().await
+    {
+        error!(%err, "Failed updating ssh integration");
     }
 }
 

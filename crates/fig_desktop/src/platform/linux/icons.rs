@@ -20,10 +20,10 @@ static SELECTED_THEME: Mutex<Cow<'_, str>> = Mutex::new(Cow::Borrowed("hicolor")
 pub fn init() -> Result<()> {
     let mut use_local = true;
 
-    if let Some(theme) = settings::get_string("autocomplete.iconTheme")? {
-        if theme != "system" {
-            use_local = set_theme(theme).is_err();
-        }
+    if let Some(theme) = settings::get_string("autocomplete.iconTheme")?
+        && theme != "system"
+    {
+        use_local = set_theme(theme).is_err();
     }
 
     if use_local {

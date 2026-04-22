@@ -529,10 +529,10 @@ impl WebviewManager {
                         }) => {
                             let mut dialog = rfd::AsyncMessageDialog::new().set_title(title).set_description(body);
 
-                            if let Some(parent) = parent {
-                                if let Some(parent_window) = self.fig_id_map.get(&parent) {
-                                    dialog = dialog.set_parent(&parent_window.window);
-                                }
+                            if let Some(parent) = parent
+                                && let Some(parent_window) = self.fig_id_map.get(&parent)
+                            {
+                                dialog = dialog.set_parent(&parent_window.window);
                             }
 
                             let dialog = match (buttons, buttons_result.as_ref()) {

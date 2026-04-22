@@ -106,27 +106,27 @@ pub fn from_hook(
         // Focus moved to a recognized terminal. If the focused pid changed from
         // the previous focus, arm suppression so the popup stays hidden until
         // the user actively types in this newly focused terminal.
-        if let Some(new_pid) = hook.pid {
-            if previous_pid != Some(new_pid) {
-                // Seed the suppression baseline with the text currently in
-                // figterm for this pid, so the very first keystroke releases
-                // the popup instead of being consumed as the baseline.
-                let baseline = {
-                    let inner = figterm_state.inner.lock();
-                    inner
-                        .linked_sessions
-                        .values()
-                        .find(|s| {
-                            s.dead_since.is_none() && s.context.as_ref().and_then(|c| c.terminal_pid) == Some(new_pid)
-                        })
-                        .map(|s| s.edit_buffer.text.clone())
-                };
-                platform_state.0.arm_focus_change_suppress(new_pid, baseline);
-                proxy.send_event(Event::WindowEvent {
-                    window_id: AUTOCOMPLETE_ID,
-                    window_event: WindowEvent::Hide,
-                })?;
-            }
+        if let Some(new_pid) = hook.pid
+            && previous_pid != Some(new_pid)
+        {
+            // Seed the suppression baseline with the text currently in
+            // figterm for this pid, so the very first keystroke releases
+            // the popup instead of being consumed as the baseline.
+            let baseline = {
+                let inner = figterm_state.inner.lock();
+                inner
+                    .linked_sessions
+                    .values()
+                    .find(|s| {
+                        s.dead_since.is_none() && s.context.as_ref().and_then(|c| c.terminal_pid) == Some(new_pid)
+                    })
+                    .map(|s| s.edit_buffer.text.clone())
+            };
+            platform_state.0.arm_focus_change_suppress(new_pid, baseline);
+            proxy.send_event(Event::WindowEvent {
+                window_id: AUTOCOMPLETE_ID,
+                window_event: WindowEvent::Hide,
+            })?;
         }
     } else {
         *platform_state.0.active_terminal.lock() = None;

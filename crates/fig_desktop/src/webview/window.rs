@@ -330,10 +330,10 @@ impl WindowState {
             } => {
                 let (is_above, is_clipped) =
                     self.update_window_geometry(position, size, anchor, platform_state, dry_run);
-                if let Some(tx) = tx {
-                    if let Err(err) = tx.send(WindowGeometryResult { is_above, is_clipped }) {
-                        tracing::error!(%err, "failed to send window geometry update result");
-                    }
+                if let Some(tx) = tx
+                    && let Err(err) = tx.send(WindowGeometryResult { is_above, is_clipped })
+                {
+                    tracing::error!(%err, "failed to send window geometry update result");
                 }
             },
             WindowEvent::Hide => {

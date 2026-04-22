@@ -115,10 +115,10 @@ pub(super) async fn handle_x11(
     .expect("Failed changing event mask");
 
     while let Ok(event) = tokio::task::block_in_place(|| conn.wait_for_event()) {
-        if let X11Event::PropertyNotify(event) = event {
-            if let Err(err) = handle_property_event(&conn, &x11_state, &proxy, event, &platform_state) {
-                error!("error handling PropertyNotifyEvent: {err}");
-            }
+        if let X11Event::PropertyNotify(event) = event
+            && let Err(err) = handle_property_event(&conn, &x11_state, &proxy, event, &platform_state)
+        {
+            error!("error handling PropertyNotifyEvent: {err}");
         }
     }
 }
@@ -238,11 +238,11 @@ fn process_window(
         *platform_state.active_terminal.lock() = Some(terminal.clone());
     }
 
-    if let Some(old_window_data) = old_window_data {
-        if old_window_data.id != active_window {
-            hide()?;
-            return Ok(());
-        }
+    if let Some(old_window_data) = old_window_data
+        && old_window_data.id != active_window
+    {
+        hide()?;
+        return Ok(());
     }
 
     if !WM_CLASS_ALLOWLIST.contains_key(&wm_class.as_str()) {

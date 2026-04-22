@@ -1087,7 +1087,7 @@ where
 
             // Set color index.
             b"4" => {
-                if params.len() > 1 && params.len() % 2 != 0 {
+                if params.len() > 1 && !params.len().is_multiple_of(2) {
                     for chunk in params[1..].chunks(2) {
                         let index = parse_number(chunk[0]);
                         let color = xparse_color(chunk[1]);
@@ -1102,28 +1102,28 @@ where
 
             // Get/set Foreground, Background, Cursor colors.
             b"10" | b"11" | b"12" => {
-                if params.len() >= 2 {
-                    if let Some(mut dynamic_code) = parse_number(params[0]) {
-                        for param in &params[1..] {
-                            // 10 is the first dynamic color, also the foreground.
-                            let offset = dynamic_code as usize - 10;
-                            let index = NamedColor::Foreground as usize + offset;
+                if params.len() >= 2
+                    && let Some(mut dynamic_code) = parse_number(params[0])
+                {
+                    for param in &params[1..] {
+                        // 10 is the first dynamic color, also the foreground.
+                        let offset = dynamic_code as usize - 10;
+                        let index = NamedColor::Foreground as usize + offset;
 
-                            // End of setting dynamic colors.
-                            if index > NamedColor::Cursor as usize {
-                                unhandled!();
-                                break;
-                            }
-
-                            if let Some(color) = xparse_color(param) {
-                                self.handler.set_color(index, color);
-                            } else {
-                                unhandled!();
-                            }
-                            dynamic_code += 1;
+                        // End of setting dynamic colors.
+                        if index > NamedColor::Cursor as usize {
+                            unhandled!();
+                            break;
                         }
-                        return;
+
+                        if let Some(color) = xparse_color(param) {
+                            self.handler.set_color(index, color);
+                        } else {
+                            unhandled!();
+                        }
+                        dynamic_code += 1;
                     }
+                    return;
                 }
                 unhandled!();
             },

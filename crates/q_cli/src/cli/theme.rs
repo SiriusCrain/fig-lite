@@ -58,10 +58,10 @@ impl ThemeArgs {
 
         if self.list {
             for theme_entry in std::fs::read_dir(&theme_dir)? {
-                if let Ok(theme_file_name) = theme_entry.map(|s| s.file_name()) {
-                    if let Some(theme) = theme_file_name.to_str() {
-                        println!("{}", theme.trim_end_matches(".json"));
-                    }
+                if let Ok(theme_file_name) = theme_entry.map(|s| s.file_name())
+                    && let Some(theme) = theme_file_name.to_str()
+                {
+                    println!("{}", theme.trim_end_matches(".json"));
                 }
             }
             return Ok(ExitCode::SUCCESS);
