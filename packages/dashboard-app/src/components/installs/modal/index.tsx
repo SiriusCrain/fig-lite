@@ -5,7 +5,6 @@ import { Button } from "../../ui/button";
 import Lockup from "../../svg/logo";
 import onboarding from "@/data/onboarding";
 import { useStatusCheck } from "@/hooks/store/useStatusCheck";
-import LoginModal from "./login";
 import InstallModal from "./install";
 import { useLocalState, useRefreshLocalState } from "@/hooks/store/useState";
 import migrate_dark from "@assets/images/fig-migration/dark.png?url";
@@ -47,14 +46,6 @@ export default function OnboardingModal() {
     refreshGnomeExtension,
   ]);
 
-  function nextStep() {
-    if (migrationStarted && !migrationEnded) {
-      setMigrationEnded(true);
-    }
-
-    setStep(step + 1);
-  }
-
   function finish() {
     refreshAccessibility();
     refreshDotfiles();
@@ -69,22 +60,25 @@ export default function OnboardingModal() {
       .catch((err) => console.error(err));
   }
 
+  function advance() {
+    if (migrationStarted && !migrationEnded) {
+      setMigrationEnded(true);
+    }
+
+    if (step === onboarding.length - 1) {
+      finish();
+    } else {
+      setStep(step + 1);
+    }
+  }
+
   function skipInstall() {
     if (!check.id) return;
 
-    if (check.id === "dotfiles") {
-      setDotfiles(true);
-      setStep(step + 1);
-    }
+    if (check.id === "dotfiles") setDotfiles(true);
+    if (check.id === "accessibility") setAccessibility(true);
 
-    if (check.id === "accessibility") {
-      setAccessibility(true);
-      setStep(step + 1);
-    }
-
-    if (check.id === "desktopEntry" || check.id === "gnomeExtension") {
-      setStep(step + 1);
-    }
+    advance();
   }
 
   if (
@@ -95,11 +89,11 @@ export default function OnboardingModal() {
   }
 
   if (check.id === "welcome" && isMigrating) {
-    return <WelcomeModal figMigration next={nextStep} />;
+    return <WelcomeModal figMigration next={advance} />;
   }
 
   if (check.id === "welcome") {
-    return <WelcomeModal next={nextStep} />;
+    return <WelcomeModal next={advance} />;
   }
 
   if (
@@ -107,11 +101,7 @@ export default function OnboardingModal() {
       check.id,
     )
   ) {
-    return <InstallModal check={check} skip={skipInstall} next={nextStep} />;
-  }
-
-  if (check.id === "login") {
-    return <LoginModal next={finish} />;
+    return <InstallModal check={check} skip={skipInstall} next={advance} />;
   }
 
   return null;

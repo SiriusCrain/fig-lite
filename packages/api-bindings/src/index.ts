@@ -1,4 +1,3 @@
-import * as Auth from "./auth.js";
 import * as EditBufferNotifications from "./editbuffer.js";
 import * as Event from "./event.js";
 import * as Fig from "@aws/amazon-q-developer-cli-proto/fig";
@@ -14,11 +13,9 @@ import * as Settings from "./settings.js";
 import * as Shell from "./shell.js";
 import * as State from "./state.js";
 import * as Types from "./types.js";
-import * as User from "./user.js";
 import * as WindowPosition from "./position.js";
 
 const lib = {
-  Auth,
   EditBufferNotifications,
   Event,
   fs,
@@ -33,12 +30,10 @@ const lib = {
   Shell,
   State,
   Types,
-  User,
   WindowPosition,
 };
 
 export {
-  Auth,
   EditBufferNotifications,
   Event,
   Fig,
@@ -54,7 +49,6 @@ export {
   Shell,
   State,
   Types,
-  User,
   WindowPosition,
 };
 

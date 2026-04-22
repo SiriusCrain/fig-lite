@@ -1,86 +1,12 @@
 import { UserPrefView } from "@/components/preference/list";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/components/ui/link";
 import settings from "@/data/preferences";
-import { useAuth } from "@/hooks/store/useAuth";
-import { Native, User } from "@aws/amazon-q-developer-cli-api-bindings";
+import { Native } from "@aws/amazon-q-developer-cli-api-bindings";
 
 export default function Page() {
-  const auth = useAuth();
-
-  let authKind;
-  switch (auth.authKind) {
-    case "BuilderId":
-      authKind = "Builder ID";
-      break;
-    case "IamIdentityCenter":
-      authKind = "AWS IAM Identity Center";
-      break;
-  }
-
-  function logout() {
-    User.logout().then(() => {
-      window.location.pathname = "/";
-      window.location.reload();
-    });
-  }
-
   return (
     <>
       <UserPrefView array={settings} />
-      <section className={`flex flex-col py-4`}>
-        <h2
-          id={`subhead-account`}
-          className="font-bold text-medium text-zinc-400 leading-none mt-2"
-        >
-          Account
-        </h2>
-        <div className={`flex p-4 pl-0 gap-4`}>
-          <div className="flex flex-col gap-1">
-            <h3 className="font-medium leading-none">Account type</h3>
-            <p className="font-light leading-tight text-sm">
-              Users can log in with either AWS Builder ID or AWS IAM Identity
-              Center
-            </p>
-            <p className="font-light leading-tight text-sm text-black/50 dark:text-white/50">
-              {auth.authed
-                ? authKind
-                  ? `Logged in with ${authKind}`
-                  : "Logged in"
-                : "Not logged in"}
-            </p>
-
-            {auth.authed && auth.authKind === "IamIdentityCenter" && (
-              <div className="flex flex-col p-4 mt-2 gap-4 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700">
-                <div className="flex flex-col items-start gap-1">
-                  <h4 className="font-medium leading-none">Start URL</h4>
-                  <Link
-                    href={auth.startUrl ?? ""}
-                    className="font-light leading-tight text-sm text-black/50 dark:text-white/50"
-                  >
-                    {auth.startUrl}
-                  </Link>
-                </div>
-                <div className="flex flex-col items-start gap-1">
-                  <h4 className="font-medium leading-none">Region</h4>
-                  <p className="font-light leading-tight text-sm text-black/50 dark:text-white/50">
-                    {auth.region}
-                  </p>
-                </div>
-              </div>
-            )}
-            <div className="pt-2">
-              <Button
-                variant="outline"
-                onClick={() => logout()}
-                disabled={!auth.authed}
-              >
-                Log out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
       <section className={`py-4 gap-4`}>
         <h2
           id={`subhead-licenses`}
