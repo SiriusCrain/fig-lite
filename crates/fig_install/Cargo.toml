@@ -45,7 +45,7 @@ libc.workspace = true
 security-framework = "3.7.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
-dbus = { path = "../dbus" }
+fig_dbus.workspace = true
 tar = "0.4.44"
 zstd = "0.13.3"
 

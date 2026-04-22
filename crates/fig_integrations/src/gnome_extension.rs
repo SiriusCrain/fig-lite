@@ -4,7 +4,7 @@ use std::path::{
 };
 
 use async_trait::async_trait;
-use dbus::gnome_shell::{
+use fig_dbus::gnome_shell::{
     ExtensionInstallationStatus,
     ShellExtensions,
     get_extension_status,

@@ -364,7 +364,7 @@ async fn uninstall(integration: Integration, silent: bool) -> Result<()> {
             cfg_if::cfg_if! {
                 if #[cfg(target_os = "linux")] {
                     use std::sync::Arc;
-                    use dbus::gnome_shell::ShellExtensions;
+                    use fig_dbus::gnome_shell::ShellExtensions;
                     use fig_integrations::gnome_extension::GnomeExtensionIntegration;
                     use fig_os_shim::Context;
                     let ctx = Context::new();

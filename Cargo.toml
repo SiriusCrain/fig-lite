@@ -59,6 +59,7 @@ fig_integrations = { path = "crates/fig_integrations" }
 fig_ipc = { path = "crates/fig_ipc" }
 fig_log = { path = "crates/fig_log" }
 fig_os_shim = { path = "crates/fig_os_shim" }
+fig_dbus = { path = "crates/fig_dbus" }
 fig_proto = { path = "crates/fig_proto" }
 fig_remote_ipc = { path = "crates/fig_remote_ipc" }
 fig_request = { path = "crates/fig_request" }
@@ -147,6 +148,7 @@ uuid = { version = "1.20.0", features = ["v4", "serde"] }
 walkdir = "2.5.0"
 which = "6.0.3"
 whoami = "1.6.0"
+zbus = "5.11.0"
 
 # Keep these minor synced with reqwest
 # https://github.com/seanmonstar/reqwest/blob/v0.12.12/Cargo.toml

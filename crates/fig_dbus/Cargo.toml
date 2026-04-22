@@ -1,5 +1,5 @@
 [package]
-name = "dbus"
+name = "fig_dbus"
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true
@@ -20,7 +20,7 @@ thiserror.workspace = true
 tokio.workspace = true
 tokio-util.workspace = true
 tracing.workspace = true
-zbus = { path = "../zbus" }
+zbus.workspace = true
 
 [dev-dependencies]
 tracing-subscriber.workspace = true

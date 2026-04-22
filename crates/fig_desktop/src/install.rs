@@ -385,7 +385,7 @@ pub async fn initialize_fig_dir(env: &fig_os_shim::Env) -> anyhow::Result<()> {
 
 #[cfg(target_os = "linux")]
 async fn run_linux_install(ctx: Arc<Context>, settings: Arc<fig_settings::Settings>, state: Arc<fig_settings::State>) {
-    use dbus::gnome_shell::ShellExtensions;
+    use fig_dbus::gnome_shell::ShellExtensions;
     use fig_settings::State;
     use fig_util::system_info::linux::get_display_server;
 
@@ -457,14 +457,14 @@ async fn run_linux_install(ctx: Arc<Context>, settings: Arc<fig_settings::Settin
 #[cfg(target_os = "linux")]
 async fn install_gnome_shell_extension<Ctx, ExtensionsCtx>(
     ctx: &Ctx,
-    shell_extensions: &dbus::gnome_shell::ShellExtensions<ExtensionsCtx>,
+    shell_extensions: &fig_dbus::gnome_shell::ShellExtensions<ExtensionsCtx>,
     state: &fig_settings::State,
 ) -> anyhow::Result<()>
 where
     Ctx: fig_os_shim::ContextProvider,
     ExtensionsCtx: fig_os_shim::ContextProvider,
 {
-    use dbus::gnome_shell::{
+    use fig_dbus::gnome_shell::{
         ExtensionInstallationStatus,
         get_extension_status,
     };
@@ -770,7 +770,7 @@ async fn launch_ibus(ctx: &Context) {
 
     // Wait up to 2 sec for ibus activation
     for _ in 0..10 {
-        if dbus::ibus::connect_to_ibus_daemon(ctx).await.is_ok() {
+        if fig_dbus::ibus::connect_to_ibus_daemon(ctx).await.is_ok() {
             return;
         }
         tokio::time::sleep(std::time::Duration::from_millis(200)).await;
@@ -964,7 +964,7 @@ echo "{binary_name} {version}"
 
     #[cfg(target_os = "linux")]
     mod linux_gnome_shell_extension_tests {
-        use dbus::gnome_shell::{
+        use fig_dbus::gnome_shell::{
             ExtensionInstallationStatus,
             GNOME_SHELL_PROCESS_NAME,
             ShellExtensions,

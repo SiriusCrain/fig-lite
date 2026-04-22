@@ -3,7 +3,7 @@ use std::process::Command;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use dbus::gnome_shell::{
+use fig_dbus::gnome_shell::{
     ExtensionInstallationStatus,
     ShellExtensions,
     get_extension_status,
@@ -403,7 +403,7 @@ impl DoctorCheck<LinuxContext> for SandboxCheck {
 
 #[cfg(test)]
 mod tests {
-    use dbus::gnome_shell::{
+    use fig_dbus::gnome_shell::{
         ExtensionState,
         GNOME_SHELL_PROCESS_NAME,
     };

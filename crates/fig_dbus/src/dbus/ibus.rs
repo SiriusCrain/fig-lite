@@ -12,13 +12,13 @@ use tracing::{
     debug,
     trace,
 };
+use zbus::connection::Builder;
 use zbus::zvariant::{
     OwnedObjectPath,
     OwnedValue,
 };
 use zbus::{
     Connection,
-    ConnectionBuilder,
     proxy,
 };
 
@@ -132,7 +132,7 @@ async fn parse_address_from_file(fs: &Fs, path: impl AsRef<Path>) -> Result<Stri
 }
 
 async fn connect_to_bus_address(address: &str) -> Result<Connection, AddressError> {
-    Ok(ConnectionBuilder::address(address)?.build().await?)
+    Ok(Builder::address(address)?.build().await?)
 }
 
 pub async fn ibus_proxy(ctx: &Context) -> Result<IBusProxy<'static>, CrateError> {
@@ -163,38 +163,38 @@ pub trait IBus {
     fn set_global_engine(&self, engine_name: &str) -> zbus::Result<()>;
 
     /// RegistryChanged signal
-    #[dbus_proxy(signal)]
+    #[zbus(signal)]
     fn registry_changed(&self) -> zbus::Result<()>;
 
     /// ActiveEngines property
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn active_engines(&self) -> zbus::Result<Vec<OwnedValue>>;
 
     /// Address property
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn address(&self) -> zbus::Result<String>;
 
     /// CurrentInputContext property
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn current_input_context(&self) -> zbus::Result<OwnedObjectPath>;
 
     /// EmbedPreeditText property
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn embed_preedit_text(&self) -> zbus::Result<bool>;
 
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn set_embed_preedit_text(&self, value: bool) -> zbus::Result<()>;
 
     /// Engines property
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn engines(&self) -> zbus::Result<Vec<OwnedValue>>;
 
     /// GlobalEngine property
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn global_engine(&self) -> zbus::Result<OwnedValue>;
 
     /// PreloadEngines property
-    #[dbus_proxy(property)]
+    #[zbus(property)]
     fn set_preload_engines(&self, value: &[&str]) -> zbus::Result<()>;
 }
 

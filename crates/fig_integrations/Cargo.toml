@@ -35,7 +35,7 @@ tracing.workspace = true
 nix.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]
-dbus = { path = "../dbus" }
+fig_dbus.workspace = true
 sysinfo.workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]

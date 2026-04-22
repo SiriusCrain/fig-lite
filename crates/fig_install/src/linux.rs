@@ -1,7 +1,7 @@
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 
-use dbus::gnome_shell::ShellExtensions;
+use fig_dbus::gnome_shell::ShellExtensions;
 use fig_integrations::Integration;
 use fig_integrations::desktop_entry::{
     AutostartIntegration,

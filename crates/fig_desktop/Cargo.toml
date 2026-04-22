@@ -116,11 +116,11 @@ features = [
 nix.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]
-dbus = { path = "../dbus" }
+fig_dbus.workspace = true
 freedesktop-icons = "0.4.0"
 gtk = "0.18"
 x11rb = "0.13.0"
-zbus = { path = "../zbus" }
+zbus.workspace = true
 
 [target.'cfg(target_os="macos")'.dependencies]
 accessibility-sys = { path = "../macos-utils/accessibility-master/accessibility-sys", version = "0.1.3" }

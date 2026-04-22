@@ -269,7 +269,7 @@ where
             cfg_if::cfg_if! {
                 if #[cfg(target_os = "linux")] {
                     use std::sync::Arc;
-                    let shell_extensions = dbus::gnome_shell::ShellExtensions::new(Arc::downgrade(&ctx.context_arc()));
+                    let shell_extensions = fig_dbus::gnome_shell::ShellExtensions::new(Arc::downgrade(&ctx.context_arc()));
                     install_gnome_extension(action, ctx, &shell_extensions).await.map_err(super::Error::Std)?
                 }
                 else {
@@ -286,7 +286,7 @@ where
 async fn install_gnome_extension<'a, Ctx, ExtensionsCtx>(
     action: InstallAction,
     ctx: &'a Ctx,
-    shell_extensions: &'a dbus::gnome_shell::ShellExtensions<ExtensionsCtx>,
+    shell_extensions: &'a fig_dbus::gnome_shell::ShellExtensions<ExtensionsCtx>,
 ) -> Result<super::ServerOriginatedSubMessage, Box<dyn std::error::Error + Send + Sync>>
 where
     Ctx: SettingsProvider + StateProvider + ContextProvider + Sync,
@@ -498,7 +498,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[tokio::test]
     async fn test_gnome_extension_installation_and_uninstallation() {
-        use dbus::gnome_shell::{
+        use fig_dbus::gnome_shell::{
             GNOME_SHELL_PROCESS_NAME,
             ShellExtensions,
         };

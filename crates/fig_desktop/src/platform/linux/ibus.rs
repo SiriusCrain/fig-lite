@@ -3,10 +3,11 @@ use std::sync::Arc;
 use std::sync::atomic::Ordering;
 
 use anyhow::Result;
-use dbus::connect_to_ibus_daemon;
+use fig_dbus::connect_to_ibus_daemon;
 use fig_os_shim::Context;
 use fig_proto::local::caret_position_hook::Origin;
 use fig_util::terminal::PositioningKind;
+use futures::TryStreamExt;
 use tao::dpi::{
     LogicalPosition,
     LogicalSize,
@@ -19,7 +20,6 @@ use tracing::{
     debug,
     error,
 };
-use zbus::export::futures_util::TryStreamExt;
 use zbus::fdo::DBusProxy;
 use zbus::{
     MatchRule,
