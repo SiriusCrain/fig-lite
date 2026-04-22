@@ -216,8 +216,7 @@ pub async fn update(
 
         let now_unix_time = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_secs())
-            .unwrap_or(0);
+            .map_or(0, |d| d.as_secs());
 
         // If the lock file is older than 1hr, we can assume it's stale and remove it
         if lock_file.exists() {

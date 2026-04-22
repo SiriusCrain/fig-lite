@@ -281,11 +281,10 @@ pub async fn handle_remote_ipc(
                         })) => {
                             if initialized
                                 && let Some(nonce) = nonce
+                                && let Some(Some(channel)) =
+                                    figterm_state.with(&session_id, |session| session.response_map.remove(&nonce))
                             {
-                                figterm_state
-                                    .with(&session_id, |session| session.response_map.remove(&nonce))
-                                    .flatten()
-                                    .map(|channel| channel.send(response));
+                                let _ = channel.send(response);
                             }
                             None
                         },

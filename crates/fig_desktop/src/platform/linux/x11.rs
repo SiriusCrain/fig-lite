@@ -150,6 +150,7 @@ fn process_window(
     proxy: &EventLoopProxy,
     platform_state: &Arc<PlatformStateImpl>,
 ) -> anyhow::Result<()> {
+    #[allow(clippy::result_large_err)] // Err variant comes from tao::EventLoopProxy API
     let hide = || {
         proxy.send_event(Event::WindowEvent {
             window_id: AUTOCOMPLETE_ID.clone(),
