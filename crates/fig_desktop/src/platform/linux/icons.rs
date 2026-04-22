@@ -49,7 +49,7 @@ pub fn init() -> Result<()> {
 }
 
 fn set_theme(theme: String) -> Result<()> {
-    if freedesktop_icons::list_themes().contains(&theme.as_str()) || theme == "hicolor" {
+    if freedesktop_icons::list_themes().contains(&theme) || theme == "hicolor" {
         *SELECTED_THEME.lock().unwrap() = Cow::Owned(theme);
         Ok(())
     } else {
