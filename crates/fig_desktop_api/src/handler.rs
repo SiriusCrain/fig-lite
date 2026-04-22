@@ -19,7 +19,6 @@ use fig_proto::fig::{
     RunProcessRequest,
     ServerOriginatedMessage,
     UpdateApplicationPropertiesRequest,
-    UserLogoutRequest,
     WindowFocusRequest,
 };
 use fig_proto::prost::Message;
@@ -73,14 +72,6 @@ pub trait EventHandler {
         &self,
         request: Wrapped<Self::Ctx, UpdateApplicationPropertiesRequest>,
     ) -> RequestResult {
-        RequestResult::unimplemented(request.request)
-    }
-
-    // TODO: rename EventHandler to RequestHandler, and move this callback out
-    // to a separate trait.
-    async fn user_logged_in_callback(&self, _context: Self::Ctx) {}
-
-    async fn user_logout(&self, request: Wrapped<Self::Ctx, UserLogoutRequest>) -> RequestResult {
         RequestResult::unimplemented(request.request)
     }
 
@@ -155,12 +146,6 @@ where
         Some(submessage) => {
             use ClientOriginatedSubMessage::{
                 AppendToFileRequest,
-                AuthBuilderIdPollCreateTokenRequest,
-                AuthBuilderIdStartDeviceAuthorizationRequest,
-                AuthCancelPkceAuthorizationRequest,
-                AuthFinishPkceAuthorizationRequest,
-                AuthStartPkceAuthorizationRequest,
-                AuthStatusRequest,
                 CheckForUpdatesRequest,
                 ContentsOfDirectoryRequest,
                 CreateDirectoryRequest,
@@ -183,7 +168,6 @@ where
                 UpdateApplicationRequest,
                 UpdateLocalStateRequest,
                 UpdateSettingsPropertyRequest,
-                UserLogoutRequest,
                 WindowFocusRequest,
                 WriteFileRequest,
             };
@@ -225,26 +209,12 @@ where
                 InstallRequest(request) => install::install(request, &ctx).await,
                 // history
                 HistoryQueryRequest(request) => history::query(request).await,
-                // auth
-                AuthStatusRequest(request) => auth::status(request).await,
-                AuthStartPkceAuthorizationRequest(request) => auth::start_pkce_authorization(request).await,
-                AuthFinishPkceAuthorizationRequest(request) => {
-                    let result = auth::finish_pkce_authorization(request).await;
-                    event_handler.user_logged_in_callback(ctx).await;
-                    result
-                },
-                AuthCancelPkceAuthorizationRequest(request) => auth::cancel_pkce_authorization(request).await,
-                AuthBuilderIdStartDeviceAuthorizationRequest(request) => {
-                    auth::builder_id_start_device_authorization(request, &ctx).await
-                },
-                AuthBuilderIdPollCreateTokenRequest(request) => auth::builder_id_poll_create_token(request, &ctx).await,
                 // other
                 OpenInExternalApplicationRequest(request) => other::open_in_external_application(request).await,
                 PingRequest(request) => other::ping(request),
                 UpdateApplicationRequest(request) => update::update_application(request).await,
                 CheckForUpdatesRequest(request) => update::check_for_updates(request).await,
                 GetPlatformInfoRequest(request) => platform::get_platform_info(request, &ctx).await,
-                UserLogoutRequest(request) => event_handler.user_logout(request!(request)).await,
             }
         },
         None => {
