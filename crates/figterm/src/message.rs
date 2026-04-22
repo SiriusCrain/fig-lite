@@ -282,13 +282,6 @@ pub async fn process_figterm_request(
                 .ok();
             Ok(None)
         },
-        FigtermRequest::InlineShellCompletion(_) => anyhow::bail!("InlineShellCompletion is not supported over remote"),
-        FigtermRequest::InlineShellCompletionAccept(_) => {
-            anyhow::bail!("InlineShellCompletionAccept is not supported over remote")
-        },
-        FigtermRequest::InlineShellCompletionSetEnabled(_) => {
-            anyhow::bail!("InlineShellCompletionSetEnabled is not supported over remote")
-        },
     }
 }
 
@@ -334,7 +327,6 @@ async fn send_figterm_response_hostbound(
                 nonce,
                 response: Some(match response {
                     FigtermResponse::Diagnostics(diagnostics) => Response::Diagnostics(diagnostics),
-                    FigtermResponse::InlineShellCompletion(_) => unreachable!(),
                 }),
             })),
         };

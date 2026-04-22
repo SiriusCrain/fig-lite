@@ -13,9 +13,6 @@ message FigtermRequestMessage {
     InsertOnNewCmdRequest insert_on_new_cmd = 5;
     UpdateShellContextRequest update_shell_context = 6;
     NotifySSHSessionStartedRequest notify_ssh_session_started = 7;
-    InlineShellCompletionRequest inline_shell_completion = 8;
-    InlineShellCompletionAcceptRequest inline_shell_completion_accept = 9;
-    InlineShellCompletionSetEnabledRequest inline_shell_completion_set_enabled = 11;
   }
 }
 
@@ -23,7 +20,6 @@ message FigtermRequestMessage {
 message FigtermResponseMessage {
   oneof response {
     DiagnosticsResponse diagnostics = 1;
-    InlineShellCompletionResponse inline_shell_completion = 2;
   }
 }
 
@@ -150,23 +146,4 @@ message UpdateShellContextRequest {
 message NotifySSHSessionStartedRequest {
   string uuid = 1;
   string remote_host = 2;
-}
-
-message InlineShellCompletionRequest {
-  // The text to complete
-  string buffer = 1;
-}
-
-message InlineShellCompletionResponse {
-  // The text to insert
-  optional string insert_text = 1;
-}
-
-message InlineShellCompletionAcceptRequest {
-  string buffer = 1;
-  string suggestion = 2;
-}
-
-message InlineShellCompletionSetEnabledRequest {
-  bool enabled = 1;
 }
