@@ -231,7 +231,7 @@ pub fn choose(prompt: impl Display, options: &[impl ToString]) -> Result<Option<
     }
 
     match Select::with_theme(&dialoguer_theme())
-        .items(options)
+        .items(options.iter().map(|s| s.to_string()))
         .default(0)
         .with_prompt(prompt.to_string())
         .interact_opt()

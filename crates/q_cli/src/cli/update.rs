@@ -141,7 +141,7 @@ async fn try_linux_update() -> Result<ExitCode> {
                         "A new version of {} is available: {}\nWould you like to update now?",
                         PRODUCT_NAME, pkg.version
                     ))
-                    .items(&["Yes", "No"])
+                    .items(["Yes", "No"])
                     .default(0)
                     .interact_opt()?;
 
