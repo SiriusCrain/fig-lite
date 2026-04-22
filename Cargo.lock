@@ -1122,24 +1122,6 @@ dependencies = [
 
 [[package]]
 name = "cookie_store"
-version = "0.21.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2eac901828f88a5241ee0600950ab981148a18f2f756900ffba1b125ca6a3ef9"
-dependencies = [
- "cookie",
- "document-features",
- "idna",
- "log",
- "publicsuffix",
- "serde",
- "serde_derive",
- "serde_json",
- "time",
- "url",
-]
-
-[[package]]
-name = "cookie_store"
 version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fc4bff745c9b4c7fb1e97b25d13153da2bc7796260141df62378998d070207f"
@@ -2149,22 +2131,15 @@ dependencies = [
 name = "fig_request"
 version = "1.19.7"
 dependencies = [
- "bytes",
- "cfg-if",
- "cookie",
  "fig_os_shim",
  "fig_settings",
  "fig_util",
  "mockito",
  "reqwest",
- "reqwest_cookie_store",
  "rustls",
  "rustls-native-certs",
  "rustls-pemfile",
- "serde",
  "serde_json",
- "thiserror 2.0.18",
- "time",
  "tokio",
  "tracing",
  "url",
@@ -6108,7 +6083,7 @@ dependencies = [
  "base64",
  "bytes",
  "cookie",
- "cookie_store 0.22.0",
+ "cookie_store",
  "encoding_rs",
  "futures-core",
  "h2",
@@ -6141,18 +6116,6 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "webpki-roots 1.0.7",
-]
-
-[[package]]
-name = "reqwest_cookie_store"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2314c325724fea278d44c13a525ebf60074e33c05f13b4345c076eb65b2446b3"
-dependencies = [
- "bytes",
- "cookie_store 0.21.1",
- "reqwest",
- "url",
 ]
 
 [[package]]
