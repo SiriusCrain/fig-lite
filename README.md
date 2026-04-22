@@ -153,12 +153,12 @@ pnpm install --ignore-scripts
 
 
 ### 3. Start Local Development
-To compile and view changes made to `q chat`:
+To compile the `q` CLI:
 ```shell
 cargo run --bin q_cli
 ```
 
-> If you are working on other q commands, just append `-- <command name>`. For example, to run `q login`, you can run `cargo run --bin q_cli -- login`
+> Append `-- <command name>` to run a subcommand. For example, `cargo run --bin q_cli -- doctor`.
 
 To run tests for the Q CLI crate:
 ```shell

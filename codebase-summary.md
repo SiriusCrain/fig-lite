@@ -2,7 +2,7 @@
 
 ## Overview
 
-**fig-lite** is a Linux-focused fork of the Amazon Q Developer CLI (formerly Fig), stripped down to the shell autocomplete surface. All chat / translate / Amazon-cloud assistant features have been removed. The product is a desktop app (Tauri/tao/wry AppImage) plus a figterm PTY shim plus a CLI, together delivering spec-driven autocomplete in the terminal.
+**fig-lite** is a Linux-focused fork of the Amazon Q Developer CLI (formerly Fig), stripped down to the shell autocomplete surface. All chat / translate / AI / auth / Amazon-cloud assistant features have been removed. The product is a desktop app (Tauri/tao/wry AppImage) plus a figterm PTY shim plus a CLI, together delivering spec-driven autocomplete in the terminal.
 
 ## Key Components
 
@@ -26,9 +26,6 @@
 
 ## Rust workspace
 
-### Auth
-- `fig_auth` — Builder ID + PKCE OAuth flow; secret store backed by the system keyring.
-
 ### Settings & state
 - `fig_settings` — SQLite-backed settings/state with migrations (`r2d2`/`rusqlite`).
 - `fig_os_shim` — OS abstraction layer used by tests.
@@ -47,7 +44,6 @@
 - `fig_util` — Shared helpers (directories, terminal/shell detection, system info).
 - `fig_log` — Tracing setup.
 - `fig_request` — HTTP client wrapper.
-- `fig_aws_common` — Shared AWS SDK glue.
 - `alacritty_terminal` — Vendored terminal-grid parser used by figterm.
 
 ## Build
@@ -67,3 +63,4 @@
 | Telemetry | Removed end-to-end (core crate, calls, dashboard toggles) |
 | Inline shell completion (AI ghost-text) | Removed end-to-end (CLI `q inline`, figterm inline module + IPC, dashboard page, customization/profile pickers) |
 | `fig_api_client` + `amzn-codewhisperer-client` + `amzn-consolas-client` | Crates deleted — no longer referenced after inline removal |
+| Auth (`q login`/`logout`/`whoami`, Builder ID + PKCE, Identity Center, auth watcher, tray login, IPC `Auth*` messages, Midway cookie flow) | Removed end-to-end; `fig_auth` + `fig_aws_common` crates deleted, AWS SDK stack dropped from Cargo.lock |
