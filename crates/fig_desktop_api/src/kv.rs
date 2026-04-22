@@ -1,28 +1,24 @@
 use std::sync::Arc;
 
-use bincode::Options;
 use dashmap::DashMap;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum KVError {
     #[error("{}", .0)]
-    Bincode(#[from] bincode::Error),
+    Postcard(#[from] postcard::Error),
 }
 
 type Result<T, E = KVError> = std::result::Result<T, E>;
 
-// bincode provides a `serialize` and `deserialize` function, but they don't have good defaults that
-// the `bincode::options()` provides
-
 #[inline(always)]
 fn serialize(value: impl serde::Serialize) -> Result<Vec<u8>> {
-    Ok(bincode::options().serialize(&value)?)
+    Ok(postcard::to_allocvec(&value)?)
 }
 
 #[inline(always)]
 fn deserialize<T: serde::de::DeserializeOwned>(value: &[u8]) -> Result<T> {
-    Ok(bincode::options().deserialize(value)?)
+    Ok(postcard::from_bytes(value)?)
 }
 
 pub trait KVStore {
