@@ -25,16 +25,16 @@ license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
 anstream = "0.6.13"
-anyhow = "1.0.98"
+anyhow = "1.0.102"
 appkit-nsworkspace-bindings = { path = "crates/macos-utils/appkit-nsworkspace-bindings" }
 assert_cmd = "2.0.17" # This version is required for musl builds to succeed
-async-trait = "0.1.87"
+async-trait = "0.1.89"
 base64 = "0.22.1"
 block2 = "0.5.1"
-bytes = "1.10.1"
-bitflags = { version = "2.9.0", features = ["serde"] }
+bytes = "1.11.1"
+bitflags = { version = "2.11.1", features = ["serde"] }
 bstr = "1.12.0"
-camino = { version = "1.1.3", features = ["serde1"] }
+camino = { version = "1.2.2", features = ["serde1"] }
 cfg-if = "1.0.0"
 clap = { version = "4.5.32", features = [
     "deprecated",
@@ -43,15 +43,13 @@ clap = { version = "4.5.32", features = [
     "unicode",
     "wrap_help",
 ] }
-chrono = { version = "0.4", features = ["serde"] }
 cocoa = "0.26.0"
-color-print = "0.3.5"
 convert_case = "0.8.0"
 core-foundation = "0.10.0"
 core-foundation-sys = "0.8.7"
 core-graphics = "0.24.0"
 crossterm = { version = "0.28.1", features = ["event-stream", "events"] }
-dashmap = "6.0.1"
+dashmap = "6.1.0"
 dirs = "5.0.0"
 eyre = "0.6.8"
 fig_desktop_api = { path = "crates/fig_desktop_api" }
@@ -67,11 +65,11 @@ fig_request = { path = "crates/fig_request" }
 fig_settings = { path = "crates/fig_settings" }
 fig_test_utils = { path = "crates/fig_test_utils" }
 fig_util = { path = "crates/fig_util" }
-flate2 = "1.1.1"
+flate2 = "1.1.9"
 flume = "0.11.0"
 futures = "0.3.26"
-glob = "0.3.2"
-globset = "0.4.16"
+glob = "0.3.3"
+globset = "0.4.18"
 hex = "0.4.3"
 http = "1.2.0"
 indicatif = "0.17.11"
@@ -93,16 +91,14 @@ objc2 = "0.5.2"
 objc2-app-kit = "0.2.2"
 objc2-foundation = "0.2.2"
 objc2-input-method-kit = "0.2.2"
-once_cell = "1.19.0"
 parking_lot = "0.12.3"
 percent-encoding = "2.2.0"
 portable-pty = "0.8.1"
 r2d2 = "0.8.10"
 r2d2_sqlite = "0.25.0"
 rand = "0.9.0"
-rayon = "1.8.0"
-regex = "1.7.0"
-reqwest = { version = "0.12.14", default-features = false, features = [
+regex = "1.12.3"
+reqwest = { version = "0.12.28", default-features = false, features = [
     # defaults except tls
     "http2",
     "charset",
@@ -119,17 +115,14 @@ ring = "0.17.14"
 rusqlite = { version = "0.32.1", features = ["bundled", "serde_json"] }
 shellexpand = "3.0.0"
 shell-color = "1.0.0"
-semver = { version = "1.0.26", features = ["serde"] }
-serde = { version = "1.0.219", features = ["derive", "rc"] }
-serde_json = "1.0.140"
-sha2 = "0.10.9"
+semver = { version = "1.0.28", features = ["serde"] }
+serde = { version = "1.0.228", features = ["derive", "rc"] }
+serde_json = "1.0.149"
 shlex = "1.3.0"
-similar = "2.7.0"
-spinners = "4.1.0"
-strum = { version = "0.27.1", features = ["derive"] }
+spinners = "4.2.0"
 sysinfo = "0.33.1"
-thiserror = "2.0.12"
-tempfile = "3.18.0"
+thiserror = "2.0.18"
+tempfile = "3.27.0"
 time = { version = "0.3.39", features = [
     "parsing",
     "formatting",
@@ -149,17 +142,16 @@ tracing-subscriber = { version = "0.3.23", features = [
     "time",
 ] }
 unicode-width = "0.2.0"
-url = "2.5.4"
-uuid = { version = "1.15.1", features = ["v4", "serde"] }
+url = "2.5.8"
+uuid = { version = "1.20.0", features = ["v4", "serde"] }
 walkdir = "2.5.0"
 which = "6.0.3"
 whoami = "1.6.0"
-winnow = "0.6.2"
 
 # Keep these minor synced with reqwest
 # https://github.com/seanmonstar/reqwest/blob/v0.12.12/Cargo.toml
-rustls = "0.23.23"
-rustls-native-certs = "0.8.1"
+rustls = "0.23.38"
+rustls-native-certs = "0.8.3"
 webpki-roots = "=0.26.8"
 
 
