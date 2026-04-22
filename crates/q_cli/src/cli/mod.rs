@@ -16,7 +16,6 @@ mod settings;
 mod theme;
 mod uninstall;
 mod update;
-mod user;
 
 use std::io::{
     Write as _,
@@ -42,7 +41,6 @@ use eyre::{
     bail,
 };
 use feed::Feed;
-use fig_auth::is_logged_in;
 use fig_ipc::local::open_ui_element;
 use fig_log::{
     LogArgs,
@@ -138,12 +136,6 @@ pub enum CliRootCommands {
     Theme(theme::ThemeArgs),
     /// Create a new Github issue
     Issue(issue::IssueArgs),
-    /// Root level user subcommands
-    #[command(flatten)]
-    RootUser(user::RootUserSubcommand),
-    /// Manage your account
-    #[command(subcommand)]
-    User(user::UserSubcommand),
     /// Fix and diagnose common issues
     Doctor(doctor::DoctorArgs),
     /// Generate CLI completion spec
@@ -254,8 +246,6 @@ impl Cli {
                 CliRootCommands::Update(args) => args.execute().await,
                 CliRootCommands::Diagnostic(args) => args.execute().await,
                 CliRootCommands::Init(args) => args.execute().await,
-                CliRootCommands::User(user) => user.execute().await,
-                CliRootCommands::RootUser(root_user) => root_user.execute().await,
                 CliRootCommands::Doctor(args) => args.execute().await,
                 CliRootCommands::Hook(hook_subcommand) => hook_subcommand.execute().await,
                 CliRootCommands::Theme(theme_args) => theme_args.execute().await,
@@ -386,14 +376,9 @@ async fn launch_dashboard(help_fallback: bool) -> Result<ExitCode> {
         verbose: true,
     })?;
 
-    let route = match is_logged_in().await {
-        true => Some("/".into()),
-        false => None,
-    };
-
     println!("Opening {PRODUCT_NAME} dashboard");
 
-    open_ui_element(UiElement::MissionControl, route)
+    open_ui_element(UiElement::MissionControl, Some("/".into()))
         .await
         .context("Failed to open dashboard")?;
 

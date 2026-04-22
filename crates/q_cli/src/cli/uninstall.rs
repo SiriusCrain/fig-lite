@@ -58,7 +58,6 @@ async fn uninstall(ctx: std::sync::Arc<fig_os_shim::Context>) -> Result<()> {
         error!(%err, %UNINSTALL_URL, "Failed to open uninstall url");
     }
 
-    fig_auth::logout().await.ok();
     fig_install::uninstall(fig_install::InstallComponents::all(), ctx).await?;
 
     Ok(())
@@ -67,7 +66,6 @@ async fn uninstall(ctx: std::sync::Arc<fig_os_shim::Context>) -> Result<()> {
 #[cfg(target_os = "linux")]
 async fn uninstall_linux_minimal(ctx: std::sync::Arc<fig_os_shim::Context>) -> Result<()> {
     use eyre::bail;
-    use tracing::error;
 
     let exe_path = ctx.fs().canonicalize(ctx.env().current_exe()?.canonicalize()?).await?;
     let Some(exe_name) = exe_path.file_name().and_then(|s| s.to_str()) else {
@@ -89,9 +87,6 @@ async fn uninstall_linux_minimal(ctx: std::sync::Arc<fig_os_shim::Context>) -> R
         bail!("Uninstall is only supported for {CLI_BINARY_NAME:?}, the current executable is {exe_name:?}");
     }
 
-    if let Err(err) = fig_auth::logout().await {
-        error!(%err, "Failed to logout");
-    }
     fig_install::uninstall(fig_install::InstallComponents::all_linux_minimal(), ctx).await?;
     Ok(())
 }
@@ -129,9 +124,6 @@ async fn uninstall_linux_full(ctx: std::sync::Arc<fig_os_shim::Context>) -> Resu
         error!(%err, %UNINSTALL_URL, "Failed to open uninstall url");
     }
 
-    if let Err(err) = fig_auth::logout().await {
-        error!(%err, "Failed to logout");
-    }
     uninstall(InstallComponents::all(), ctx).await?;
     Ok(())
 }
