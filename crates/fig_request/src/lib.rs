@@ -1,5 +1,4 @@
 mod error;
-pub mod midway;
 mod reqwest_client;
 
 pub use error::Error;

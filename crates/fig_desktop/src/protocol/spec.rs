@@ -74,10 +74,6 @@ struct SpecIndex {
 
 static INDEX_CACHE: Mutex<Option<Vec<Result<SpecIndexMeta>>>> = Mutex::const_new(None);
 
-pub async fn clear_index_cache() {
-    *INDEX_CACHE.lock().await = None;
-}
-
 async fn remote_index_json(client: &Client) -> MappedMutexGuard<'_, Vec<Result<SpecIndexMeta>>> {
     let mut cache = INDEX_CACHE.lock().await;
 

@@ -7,10 +7,6 @@ publish.workspace = true
 version.workspace = true
 license.workspace = true
 
-[features]
-default = ["midway"]
-midway = []
-
 [lints]
 workspace = true
 
