@@ -173,8 +173,6 @@ async fn handle_local_ipc<Ctx>(
                             InputMethod,
                             ListTerminalIntegrations,
                             LogLevel,
-                            Login,
-                            Logout,
                             OpenBrowser,
                             OpenUiElement,
                             PromptAccessibility,
@@ -196,8 +194,6 @@ async fn handle_local_ipc<Ctx>(
                             OpenBrowser(command) => commands::open_browser(command).await,
                             PromptAccessibility(_) => commands::prompt_for_accessibility_permission(&ctx).await,
                             LogLevel(command) => commands::log_level(command),
-                            Login(_) => commands::login(&proxy).await,
-                            Logout(_) => commands::logout(&proxy).await,
                             DumpState(command) => commands::dump_state(
                                 command,
                                 &figterm_state,

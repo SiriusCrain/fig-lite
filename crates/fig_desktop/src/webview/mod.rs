@@ -91,8 +91,6 @@ use crate::request::api_request;
 use crate::tray::{
     self,
     build_tray,
-    get_context_menu,
-    get_icon,
 };
 use crate::webview::window_id::AutocompleteId;
 pub use crate::webview::window_id::{
@@ -104,7 +102,6 @@ use crate::{
     EventLoop,
     EventLoopProxy,
     InterceptState,
-    auth_watcher,
     file_watcher,
     local_ipc,
     utils,
@@ -114,8 +111,6 @@ pub const DASHBOARD_SIZE: LogicalSize<f64> = LogicalSize::new(960.0, 720.0);
 pub const DASHBOARD_MINIMUM_SIZE: LogicalSize<f64> = LogicalSize::new(700.0, 480.0);
 
 pub const AUTOCOMPLETE_WINDOW_TITLE: &str = "Fig Autocomplete";
-
-pub const LOGIN_PATH: &str = "/";
 
 fn map_theme(theme: &str) -> Option<WryTheme> {
     match theme {
@@ -362,7 +357,6 @@ impl WebviewManager {
         }
 
         file_watcher::setup_listeners(self.notifications_state.clone(), self.event_loop.create_proxy()).await;
-        auth_watcher::spawn_auth_watcher();
 
         init_webview_notification_listeners(self.event_loop.create_proxy()).await;
 
@@ -502,35 +496,10 @@ impl WebviewManager {
                         Event::ControlFlow(new_control_flow) => {
                             *control_flow = new_control_flow;
                         },
-                        Event::ReloadTray { is_logged_in } => {
-                            tray.set_icon(Some(get_icon(is_logged_in)))
-                                .map_err(|err| error!(?err))
-                                .ok();
-                            tray.set_icon_as_template(true);
-                            tray.set_menu(Some(Box::new(get_context_menu(is_logged_in))));
-                        },
-                        Event::ReloadCredentials => {
-                            // tray.set_menu(Some(Box::new(get_context_menu())));
-
-                            let autocomplete_enabled =
-                                !fig_settings::settings::get_bool_or("autocomplete.disable", false)
-                                    && PlatformState::accessibility_is_enabled().unwrap_or(true);
-                            // && fig_request::fig_auth::is_logged_in();
-
-                            proxy
-                                .send_event(Event::WindowEvent {
-                                    window_id: AUTOCOMPLETE_ID,
-                                    window_event: WindowEvent::SetEnabled(autocomplete_enabled),
-                                })
-                                .unwrap();
-                        },
                         Event::ReloadAccessibility => {
-                            // tray.set_menu(Some(Box::new(get_context_menu())));
-
                             let autocomplete_enabled =
                                 !fig_settings::settings::get_bool_or("autocomplete.disable", false)
                                     && PlatformState::accessibility_is_enabled().unwrap_or(true);
-                            // && fig_request::fig_auth::is_logged_in();
 
                             proxy
                                 .send_event(Event::WindowEvent {
@@ -648,7 +617,6 @@ where
 }
 
 pub struct DashboardOptions {
-    pub show_onboarding: bool,
     pub visible: bool,
     pub page: Option<String>,
 }
@@ -657,11 +625,7 @@ pub fn build_dashboard(
     ctx: Arc<Context>,
     web_context: &mut WebContext,
     event_loop: &EventLoop,
-    DashboardOptions {
-        show_onboarding,
-        visible,
-        page,
-    }: DashboardOptions,
+    DashboardOptions { visible, page }: DashboardOptions,
 ) -> anyhow::Result<(Window, WebView)> {
     let window = WindowBuilder::new()
         .with_title(PRODUCT_NAME)
@@ -698,9 +662,7 @@ pub fn build_dashboard(
 
     let mut url = dashboard::url();
 
-    if show_onboarding {
-        url.set_path(LOGIN_PATH);
-    } else if let Some(page) = page {
+    if let Some(page) = page {
         url.set_path(&page);
     }
 

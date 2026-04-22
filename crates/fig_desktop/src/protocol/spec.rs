@@ -5,7 +5,6 @@ use std::sync::{
 };
 
 use anyhow::Result;
-use fig_auth::builder_id_token;
 use fig_os_shim::Context;
 use fig_request::reqwest::Client;
 use fnv::FnvHashSet;
@@ -33,43 +32,15 @@ use crate::webview::WindowId;
 
 const APPLICATION_JAVASCRIPT: HeaderValue = HeaderValue::from_static("application/javascript");
 
-#[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum AuthType {
-    None,
-    Midway,
-}
-
-impl AuthType {
-    pub async fn get(&self, default_client: &Client, url: Url) -> Result<fig_request::reqwest::Response> {
-        match self {
-            AuthType::Midway => Ok(fig_request::midway::midway_request(url).await?.error_for_status()?),
-            _ => Ok(default_client.get(url).send().await?.error_for_status()?),
-        }
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct CdnSource {
     url: Url,
-    auth_type: AuthType,
 }
 
 static CDNS: LazyLock<Vec<CdnSource>> = LazyLock::new(|| {
-    vec![
-        // Public cdn
-        CdnSource {
-            url: "https://specs.q.us-east-1.amazonaws.com".try_into().unwrap(),
-            auth_type: AuthType::None,
-        },
-        // Internal Amazon spec cdn
-        CdnSource {
-            url: "https://prod.us-east-1.shellspecs.jupiter.ai.aws.dev"
-                .try_into()
-                .unwrap(),
-            auth_type: AuthType::Midway,
-        },
-    ]
+    vec![CdnSource {
+        url: "https://specs.q.us-east-1.amazonaws.com".try_into().unwrap(),
+    }]
 });
 
 fn res_404() -> Response<Cow<'static, [u8]>> {
@@ -113,31 +84,14 @@ async fn remote_index_json(client: &Client) -> MappedMutexGuard<'_, Vec<Result<S
     if cache.is_none() {
         *cache = Some(
             future::join_all(CDNS.iter().map(|cdn_source| async move {
-                if AuthType::Midway == cdn_source.auth_type {
-                    let auth_token = match builder_id_token().await {
-                        Ok(auth_token) => match auth_token {
-                            Some(auth_token) => auth_token,
-                            None => return None,
-                        },
-                        Err(err) => {
-                            error!(%err, "Failed to load auth");
-                            return None;
-                        },
-                    };
-
-                    if !auth_token.is_amzn_user() {
-                        return None;
-                    }
-                }
-
                 let mut url = cdn_source.url.clone();
                 url.set_path("index.json");
 
-                let response = match cdn_source.auth_type.get(client, url).await {
+                let response = match client.get(url).send().await.and_then(|r| r.error_for_status()) {
                     Ok(response) => response,
                     Err(err) => {
                         error!(%err, "Failed to fetch spec index");
-                        return Some(Err(err));
+                        return Some(Err(err.into()));
                     },
                 };
 
@@ -232,7 +186,7 @@ pub async fn handle(
         let mut url = cdn_source.url.clone();
         url.set_path(path);
 
-        let response = cdn_source.auth_type.get(client, url).await?;
+        let response = client.get(url).send().await?.error_for_status()?;
 
         let content_type = response
             .headers()
