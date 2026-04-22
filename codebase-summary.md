@@ -26,11 +26,6 @@
 
 ## Rust workspace
 
-### Autocomplete API path
-- `fig_api_client` — Thin wrapper over `amzn-codewhisperer-client` exposing `generate_completions`, customization/profile listing, and telemetry-event upload. Chat/streaming types were removed in the fig-lite fork.
-- `amzn-codewhisperer-client` — Smithy-generated AWS SDK (CodeWhisperer). Used for the completions RPC. Many chat/agentic operations are unused but not yet pruned from the generated code.
-- `amzn-consolas-client` — Secondary completion backend.
-
 ### Auth
 - `fig_auth` — Builder ID + PKCE OAuth flow; secret store backed by the system keyring.
 
@@ -69,5 +64,6 @@
 | `q translate` | Removed end-to-end (`arboard`, `region_check`, `wayland` feature, `TranslationActioned` telemetry) |
 | Chat streaming clients (`amzn-*-streaming-client`) | Crates deleted from workspace |
 | `semantic_search_client` | Removed as orphan |
-
-Unused operations still present inside `amzn-codewhisperer-client` (task-assist, transformation, code-analysis, code-fix, agentic chat, etc.) have been left in place because the crate is Smithy-generated; a targeted prune is tracked separately.
+| Telemetry | Removed end-to-end (core crate, calls, dashboard toggles) |
+| Inline shell completion (AI ghost-text) | Removed end-to-end (CLI `q inline`, figterm inline module + IPC, dashboard page, customization/profile pickers) |
+| `fig_api_client` + `amzn-codewhisperer-client` + `amzn-consolas-client` | Crates deleted — no longer referenced after inline removal |

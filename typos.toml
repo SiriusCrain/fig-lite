@@ -1,8 +1,6 @@
 [files]
 extend-exclude = [
   "tests",
-  "crates/amzn-codewhisperer-client",
-  "crates/amzn-consolas-client",
   "crates/zbus",
   "crates/zbus_names",
   "packages/fuzzysort",
