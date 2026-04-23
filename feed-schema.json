@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "title": "Amazon Q for CLI Feed",
+  "title": "Bay CLI Feed",
   "type": "object",
   "properties": {
     "entries": {

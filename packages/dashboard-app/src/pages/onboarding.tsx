@@ -1,6 +1,6 @@
 import autocompleteDemo from "@assets/images/autocomplete_demo.gif";
 import { Link } from "@/components/ui/link";
-import { AUTOCOMPLETE_SSH_WIKI_URL, KIRO_CLI_URL } from "@/lib/constants";
+import { AUTOCOMPLETE_SSH_WIKI_URL } from "@/lib/constants";
 import { Terminal } from "@/components/ui/terminal";
 import { KiroLogo } from "@/components/svg/logo";
 
@@ -19,22 +19,12 @@ export default function Page() {
           </div>
           <div className="flex flex-col gap-1">
             <h1 className="font-bold text-lg font-ember leading-none">
-              Amazon Q Developer CLI users can now upgrade to the Kiro CLI
+              Welcome to Bay
             </h1>
             <p className="text-sm leading-tight">
-              Your existing Q Developer CLI workflows and subscription continue
-              to work without any changes. You can update to Kiro CLI manually
-              with{" "}
-              <code style={{ color: "var(--q-banner-link)" }}>q update</code>{" "}
-              today, or wait for the auto-update on 11/24 to apply the change.{" "}
-              <Link
-                href={KIRO_CLI_URL}
-                className="font-medium no-underline"
-                variant="primary"
-                style={{ color: "var(--q-banner-link)" }}
-              >
-                Learn more &gt;
-              </Link>
+              Bay is a lean fork of the Amazon Q Developer CLI focused on
+              spec-driven shell autocomplete — no cloud, no AI, no auth. Start
+              typing in a new shell session to see suggestions.
             </p>
           </div>
         </div>

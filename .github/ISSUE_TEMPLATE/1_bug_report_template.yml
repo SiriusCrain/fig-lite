@@ -1,5 +1,5 @@
 name: "Bug report"
-description: "File an issue related to Amazon Q Developer CLI"
+description: "File an issue related to Bay CLI"
 
 title: "bug: "
 labels: ["NEED_TO_LABEL"]
@@ -10,11 +10,11 @@ body:
   attributes:
     label: "Checks"
     options:
-    - label: "I have searched [github.com/aws/amazon-q-developer-cli/issues](https://github.com/aws/amazon-q-developer-cli/issues?q=) and there are no duplicates of my issue"
+    - label: "I have searched [github.com/SiriusCrain/bay/issues](https://github.com/SiriusCrain/bay/issues?q=) and there are no duplicates of my issue"
       required: true
-    - label: "I have run `q doctor` in the affected terminal session"
+    - label: "I have run `bay doctor` in the affected terminal session"
       required: true
-    - label: "I have run `q restart` and replicated the issue again"
+    - label: "I have run `bay restart` and replicated the issue again"
       required: true
 
 - type: input
@@ -50,5 +50,5 @@ body:
   id: "environment"
   attributes:
     label: "Environment"
-    description: "If possible, run `q diagnostic` and paste the output below."
+    description: "If possible, run `bay diagnostic` and paste the output below."
     render: yaml

@@ -1,5 +1,5 @@
 import { Intro, PrefSection } from "@/components/preference/list";
-import { AUTOCOMPLETE_WIKI_URL, PRODUCT_NAME } from "@/lib/constants";
+import { PRODUCT_NAME } from "@/lib/constants";
 
 const autocompleteSettings: PrefSection[] = [
   {
@@ -254,7 +254,6 @@ const autocompleteSettings: PrefSection[] = [
 export const intro: Intro = {
   title: "CLI Completions",
   description: "IDE-style autocomplete for 500+ CLIs.",
-  link: AUTOCOMPLETE_WIKI_URL,
 };
 
 export default autocompleteSettings;

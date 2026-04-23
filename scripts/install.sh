@@ -3,18 +3,18 @@
 set -eu
 
 # =============================================================================
-# Q CLI Installation Script
+# Bay CLI Installation Script
 # =============================================================================
 
 # Configuration
-BINARY_NAME="q"
-CLI_NAME="Q CLI"
-COMMAND_NAME="q"
+BINARY_NAME="bay"
+CLI_NAME="Bay CLI"
+COMMAND_NAME="bay"
 DESKTOP_BINARY_NAME="bay-desktop"
-BASE_URL="https://desktop-release.q.us-east-1.amazonaws.com"
+BASE_URL=""
 MANIFEST_URL="${BASE_URL}/latest/manifest.json"
-MACOS_FILENAME="Amazon Q.dmg"
-MACOS_FILENAME_ESCAPED="Amazon%20Q.dmg"
+MACOS_FILENAME="Bay.dmg"
+MACOS_FILENAME_ESCAPED="Bay.dmg"
 
 # Installation directories
 MACOS_APP_DIR="/Applications"
@@ -79,7 +79,7 @@ This script will:
 3. Verify checksums
 4. Install $CLI_NAME on your system
 
-For more information, visit: https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-installing.html
+For more information, visit: https://github.com/SiriusCrain/bay
 EOF
 }
 

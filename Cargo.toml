@@ -12,13 +12,9 @@ members = [
 default-members = ["crates/q_cli"]
 
 [workspace.package]
-authors = [
-    "Amazon Q CLI Team (q-cli@amazon.com)",
-    "Chay Nabors (nabochay@amazon.com)",
-    "Brandon Kiser (bskiser@amazon.com)",
-]
+authors = ["SiriusCrain"]
 edition = "2024"
-homepage = "https://aws.amazon.com/q/"
+homepage = "https://github.com/SiriusCrain/bay"
 publish = false
 version = "0.1.0"
 license = "MIT OR Apache-2.0"

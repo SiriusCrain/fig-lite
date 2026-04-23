@@ -1,8 +1,8 @@
-# fig-lite Codebase Summary
+# bay Codebase Summary
 
 ## Overview
 
-**fig-lite** is a fork of the Amazon Q Developer CLI (formerly Fig), scoped to shell autocomplete. It ships a desktop app (Tauri/tao/wry, AppImage on Linux), a figterm PTY shim, and a CLI that together deliver spec-driven autocomplete in the terminal.
+**bay** is a fork of the Amazon Q Developer CLI (formerly Fig), scoped to shell autocomplete. It ships a desktop app (Tauri/tao/wry, AppImage on Linux), a figterm PTY shim, and a CLI that together deliver spec-driven autocomplete in the terminal.
 
 ## Key Components
 
@@ -27,20 +27,24 @@
 ## Rust workspace
 
 ### Settings & state
+
 - `fig_settings` — SQLite-backed settings/state with migrations (`r2d2`/`rusqlite`).
 - `fig_os_shim` — OS abstraction layer used by tests.
 
 ### IPC
+
 - `fig_proto` — Protobuf message definitions.
 - `fig_ipc` — Unix-socket client/server helpers.
 - `fig_remote_ipc` — Cross-host IPC for SSH scenarios.
 - `fig_desktop_api` — Bridge exposing Rust functionality to the webview side.
 
 ### Install / integrations
+
 - `fig_install` — Self-update + shell integration installer.
 - `fig_integrations` — Per-shell (bash/zsh/fish) and per-IDE (VSCode/JetBrains/GNOME) integration management.
 
 ### Support
+
 - `fig_util` — Shared helpers (directories, terminal/shell detection, system info).
 - `fig_log` — Tracing setup.
 - `fig_request` — HTTP client wrapper.

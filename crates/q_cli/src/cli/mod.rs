@@ -101,7 +101,7 @@ pub enum Processes {
     App,
 }
 
-/// The Amazon Q CLI
+/// The Bay CLI
 #[deny(missing_docs)]
 #[derive(Debug, PartialEq, Subcommand)]
 pub enum CliRootCommands {
@@ -117,14 +117,14 @@ pub enum CliRootCommands {
     /// Setup cli components
     #[command(alias("install"))]
     Setup(internal::InstallArgs),
-    /// Uninstall Amazon Q
+    /// Uninstall Bay
     #[command(hide = true)]
     Uninstall {
         /// Force uninstall
         #[arg(long, short = 'y')]
         no_confirm: bool,
     },
-    /// Update the Amazon Q application
+    /// Update the Bay application
     #[command(alias("upgrade"))]
     Update(update::UpdateArgs),
     /// Run diagnostic tests
@@ -171,7 +171,7 @@ pub enum CliRootCommands {
 
 const HELP_TEXT: &str = color_print::cstr! {"
 
-<magenta,em>q</magenta,em> (Amazon Q CLI)
+<magenta,em>q</magenta,em> (Bay CLI)
 
 <magenta,em>Popular Subcommands</magenta,em>              <black!><em>Usage:</em> q [subcommand]</black!>
 ╭────────────────────────────────────────────────────╮

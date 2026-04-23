@@ -393,9 +393,9 @@ mod tests {
 
     const TEST_DESKTOP_ENTRY: &str = r#"[Desktop Entry]
 Categories=Development;
-Exec=amazon-q
-Icon=amazon-q
-Name=Amazon Q
+Exec=bay
+Icon=bay
+Name=Bay
 Terminal=false
 Type=Application"#;
 

@@ -1,17 +1,10 @@
 // These should match the rust constants in fig_util::consts
-export const PRODUCT_NAME = "Amazon Q";
-export const CLI_BINARY_NAME = "q";
+export const PRODUCT_NAME = "Bay";
+export const CLI_BINARY_NAME = "bay";
 
 export const DESKTOP_ENTRY_NAME = "bay.desktop";
 
-export const USER_MANUAL_URL =
-  "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line.html";
-export const AUTOCOMPLETE_WIKI_URL =
-  "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-autocomplete.html";
-export const AUTOCOMPLETE_SSH_WIKI_URL =
-  "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-autocomplete-ssh.html";
-export const BAY_MIGRATION_URL =
-  "https://docs.aws.amazon.com/codewhisperer/latest/userguide/whisper-legacy.html";
-export const KIRO_CLI_URL = "https://kiro.dev/cli-upgrade";
+// TODO: point to Bay's own SSH documentation once it exists.
+export const AUTOCOMPLETE_SSH_WIKI_URL = "#";
 
 export const NOTIFICATIONS_SEEN_STATE_KEY = "dashboard.notificationsSeen";

@@ -76,7 +76,7 @@ exit_script_nice() {
 clear 
 cat <<EOF
 
-  ${BOLD}${UNDERLINE}Amazon Q's onboarding was quit${NORMAL}
+  ${BOLD}${UNDERLINE}Bay's onboarding was quit${NORMAL}
   
   You can redo this onboarding any time. Just run ${BOLD}${MAGENTA}fig onboarding${NORMAL}
    
@@ -118,9 +118,9 @@ EOF
 
 ## you can also use <<-'EOF' to strip tab character from start of each line
 cat <<EOF 
-   Hey! Welcome to ${MAGENTA}${BOLD}Amazon Q${NORMAL}.
+   Hey! Welcome to ${MAGENTA}${BOLD}Bay${NORMAL}.
 
-   This quick walkthrough will show you how Amazon Q works.
+   This quick walkthrough will show you how Bay works.
 
 
 
@@ -134,7 +134,7 @@ clear
 
 cat <<EOF
    
-   ${BOLD}${MAGENTA}Amazon Q${NORMAL} suggests commands, options, and arguments as you type.
+   ${BOLD}${MAGENTA}Bay${NORMAL} suggests commands, options, and arguments as you type.
 
    ${BOLD}Autocomplete Basics${NORMAL}
 

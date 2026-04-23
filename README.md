@@ -1,4 +1,4 @@
-# fig-lite
+# bay
 
 IDE-style autocomplete for your terminal. Fork of the Amazon Q Developer CLI, scoped to local spec-driven autocomplete — no cloud, no AI, no auth.
 
