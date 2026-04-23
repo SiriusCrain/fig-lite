@@ -28,7 +28,7 @@ You can verify figterm is running by:
 
 1. Running `pstree -p $$` and checking, e.g. for a `figterm` process with a
    child `zsh` process.
-2. Running `env | grep FIG` and checking the `Q_TERM` variable is set to
+2. Running `env | grep FIG` and checking the `BAY_TERM` variable is set to
 3.
 
 ## How does it work?

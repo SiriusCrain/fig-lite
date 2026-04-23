@@ -214,7 +214,7 @@ impl Cli {
                 ),
                 false => None,
             },
-            log_to_stdout: fig_os_shim::Env::new().q_log_stdout() || self.verbose > 0,
+            log_to_stdout: fig_os_shim::Env::new().bay_log_stdout() || self.verbose > 0,
             log_file_path: match self.subcommand {
                 Some(CliRootCommands::Internal(InternalSubcommand::Multiplexer(_))) => Some("mux.log".to_owned()),
                 _ => match fig_log::get_log_level_max() >= Level::DEBUG {

@@ -10,7 +10,7 @@ set -eu
 BINARY_NAME="q"
 CLI_NAME="Q CLI"
 COMMAND_NAME="q"
-DESKTOP_BINARY_NAME="q_desktop"
+DESKTOP_BINARY_NAME="bay-desktop"
 BASE_URL="https://desktop-release.q.us-east-1.amazonaws.com"
 MANIFEST_URL="${BASE_URL}/latest/manifest.json"
 MACOS_FILENAME="Amazon Q.dmg"
@@ -384,7 +384,7 @@ install_linux() {
     
     log "Running installer..."
     chmod +x "$install_script"
-    Q_SKIP_SETUP=1 "$install_script"
+    BAY_SKIP_SETUP=1 "$install_script"
 }
 
 # Cleanup function - only removes files/dirs we created

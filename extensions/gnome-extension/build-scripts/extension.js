@@ -35,7 +35,7 @@ tasks.add(
     );
 
     resources.add(
-      "amazon-q-for-cli-gnome-integration.gresource",
+      "bay-gnome-integration.gresource",
       new File(await fs.readFile("./resources/resources.gresource")),
     );
 
@@ -61,10 +61,10 @@ tasks.add(
     );
 
     schemas.add(
-      "org.gnome.shell.extensions.amazon-q-for-cli-gnome-integration.gschema.xml",
+      "org.gnome.shell.extensions.bay-gnome-integration.gschema.xml",
       new File(
         await fs.readFile(
-          "./schemas/org.gnome.shell.extensions.amazon-q-for-cli-gnome-integration.gschema.xml",
+          "./schemas/org.gnome.shell.extensions.bay-gnome-integration.gschema.xml",
         ),
       ),
     );
@@ -146,6 +146,6 @@ for await (const entry of await fs.opendir("./dist")) {
 
 await tasks.wait();
 
-await zip.save("./amazon-q-for-cli-gnome-integration@aws.amazon.com.zip");
+await zip.save("./bay-gnome-integration@siriuscrain.org.zip");
 
 console.log("Extension bundled!");

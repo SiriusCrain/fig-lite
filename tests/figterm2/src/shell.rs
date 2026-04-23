@@ -153,8 +153,8 @@ impl Shell {
         let mut cmd = CommandBuilder::new(shell);
 
         let session_id = "1234";
-        cmd.env("Q_NEW_SESSION", "1");
-        cmd.env("MOCK_QTERM_SESSION_ID", session_id);
+        cmd.env("BAY_NEW_SESSION", "1");
+        cmd.env("MOCK_BAYTERM_SESSION_ID", session_id);
         cmd.env("TMPDIR", tempdir.path());
         cmd.env("XDG_RUNTIME_DIR", tempdir.path());
 

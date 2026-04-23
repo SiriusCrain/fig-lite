@@ -71,15 +71,15 @@ def rust_env(release: bool, variant: Optional[Variant] = None, linker=None) -> D
     if isDarwin():
         env["MACOSX_DEPLOYMENT_TARGET"] = "10.13"
 
-    env["AMAZON_Q_BUILD_TARGET_TRIPLE"] = get_target_triple()
-    env["AMAZON_Q_BUILD_HASH"] = build_hash()
-    env["AMAZON_Q_BUILD_DATETIME"] = build_datetime()
+    env["BAY_BUILD_TARGET_TRIPLE"] = get_target_triple()
+    env["BAY_BUILD_HASH"] = build_hash()
+    env["BAY_BUILD_DATETIME"] = build_datetime()
     if variant:
-        env["AMAZON_Q_BUILD_VARIANT"] = variant.name
+        env["BAY_BUILD_VARIANT"] = variant.name
 
     # Test related env vars:
     if skip_fish_tests():
-        env["AMAZON_Q_BUILD_SKIP_FISH_TESTS"] = "1"
+        env["BAY_BUILD_SKIP_FISH_TESTS"] = "1"
 
     return env
 
@@ -102,7 +102,7 @@ def get_target_triple() -> str:
     """
     Returns the target triple to be built and defined in the application manifest.
     """
-    env = environ.get("AMAZON_Q_BUILD_TARGET_TRIPLE")
+    env = environ.get("BAY_BUILD_TARGET_TRIPLE")
     if env:
         return env
     elif isDarwin():

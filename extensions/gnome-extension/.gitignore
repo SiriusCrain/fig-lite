@@ -1,5 +1,5 @@
 /node_modules
 /types/.*.d.ts
-/amazon-q-for-cli-gnome-integration@aws.amazon.com.zip
+/bay-gnome-integration@siriuscrain.org.zip
 /.vscode
 /dist

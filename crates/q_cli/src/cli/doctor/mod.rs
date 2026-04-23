@@ -73,10 +73,10 @@ use fig_util::directories::{
     settings_path,
 };
 use fig_util::env_var::{
-    PROCESS_LAUNCHED_BY_Q,
-    Q_PARENT,
-    Q_TERM,
-    QTERM_SESSION_ID,
+    BAY_PARENT,
+    BAY_TERM,
+    BAYTERM_SESSION_ID,
+    PROCESS_LAUNCHED_BY_BAY,
 };
 use fig_util::macos::BUNDLE_CONTENTS_INFO_PLIST_PATH;
 use fig_util::system_info::SupportLevel;
@@ -512,11 +512,11 @@ impl DoctorCheck for RemoteSocketCheck {
     }
 
     async fn check(&self, _: &()) -> Result<(), DoctorError> {
-        let q_parent = fig_os_shim::Env::new().q_parent().ok();
+        let bay_parent = fig_os_shim::Env::new().bay_parent().ok();
         let remote_socket = remote_socket_path().map_err(|err| DoctorError::Error {
             reason: "Unable to get remote socket path".into(),
             info: vec![
-                format!("{Q_PARENT}: {q_parent:?}").into(),
+                format!("{BAY_PARENT}: {bay_parent:?}").into(),
                 format!("Error: {err}").into(),
             ],
             fix: None,
@@ -528,7 +528,7 @@ impl DoctorCheck for RemoteSocketCheck {
             reason: format!("{PRODUCT_NAME} socket missing").into(),
             info: vec![
                 format!("Path: {remote_socket:?}").into(),
-                format!("{Q_PARENT}: {q_parent:?}").into(),
+                format!("{BAY_PARENT}: {bay_parent:?}").into(),
                 format!("Error: {err}").into(),
             ],
             fix: None,
@@ -546,7 +546,7 @@ impl DoctorCheck for RemoteSocketCheck {
                 info: vec![
                     "Ensure the desktop app is running".into(),
                     format!("Path: {remote_socket:?}").into(),
-                    format!("{Q_PARENT}: {q_parent:?}").into(),
+                    format!("{BAY_PARENT}: {bay_parent:?}").into(),
                     format!("Error: {err}").into(),
                 ],
                 fix: None,
@@ -645,7 +645,7 @@ impl DoctorCheck for FigIntegrationsCheck {
             });
         }
 
-        if std::env::var_os(PROCESS_LAUNCHED_BY_Q).is_some() {
+        if std::env::var_os(PROCESS_LAUNCHED_BY_BAY).is_some() {
             return Err(DoctorError::Error {
                 reason: format!("{PRODUCT_NAME} can not run in a process it launched").into(),
                 info: vec![],
@@ -678,14 +678,14 @@ impl DoctorCheck for FigIntegrationsCheck {
         //    });
         //}
 
-        match fig_os_shim::Env::new().q_term().as_deref() {
+        match fig_os_shim::Env::new().bay_term().as_deref() {
             Ok(env!("CARGO_PKG_VERSION")) => Ok(()),
             Ok(ver) if env!("CARGO_PKG_VERSION").ends_with("-dev") || ver.ends_with("-dev") => Err(doctor_warning!(
                 "{PTY_BINARY_NAME} is running with a different version than {PRODUCT_NAME} CLI, it looks like you are running a development version of {PRODUCT_NAME} however"
             )),
             Ok(_) => Err(DoctorError::Error {
                 reason: "This terminal is not running with the latest integration, please restart your terminal".into(),
-                info: vec![format!("{Q_TERM}={}", fig_os_shim::Env::new().q_term().unwrap_or_default()).into()],
+                info: vec![format!("{BAY_TERM}={}", fig_os_shim::Env::new().bay_term().unwrap_or_default()).into()],
                 fix: None,
                 error: None,
             }),
@@ -694,7 +694,7 @@ impl DoctorCheck for FigIntegrationsCheck {
                     "{PTY_BINARY_NAME} is not running in this terminal, please try restarting your terminal"
                 )
                 .into(),
-                info: vec![format!("{Q_TERM}={}", fig_os_shim::Env::new().q_term().unwrap_or_default()).into()],
+                info: vec![format!("{BAY_TERM}={}", fig_os_shim::Env::new().bay_term().unwrap_or_default()).into()],
                 fix: None,
                 error: None,
             }),
@@ -712,11 +712,11 @@ impl DoctorCheck for PtySocketCheck {
 
     async fn check(&self, _: &()) -> Result<(), DoctorError> {
         // Check that the socket exists
-        let term_session = match std::env::var(QTERM_SESSION_ID) {
+        let term_session = match std::env::var(BAYTERM_SESSION_ID) {
             Ok(session) => session,
             Err(_) => {
                 return Err(doctor_error!(
-                    "Qterm is not running, please restart your terminal. QTERM_SESSION_ID is unset."
+                    "Qterm is not running, please restart your terminal. BAYTERM_SESSION_ID is unset."
                 ));
             },
         };

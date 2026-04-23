@@ -40,8 +40,7 @@ from const import (
     DESKTOP_PACKAGE_PATH,
     DMG_NAME,
     LINUX_ARCHIVE_NAME,
-    LINUX_LEGACY_GNOME_EXTENSION_UUID,
-    LINUX_MODERN_GNOME_EXTENSION_UUID,
+    LINUX_GNOME_EXTENSION_UUID,
     LINUX_PACKAGE_NAME,
     MACOS_BUNDLE_ID,
     PTY_BINARY_NAME,
@@ -476,8 +475,7 @@ def linux_tauri_config(
     autocomplete_path: pathlib.Path,
     vscode_path: pathlib.Path,
     themes_path: pathlib.Path,
-    legacy_extension_dir_path: pathlib.Path,
-    modern_extension_dir_path: pathlib.Path,
+    extension_dir_path: pathlib.Path,
     bundle_metadata_path: pathlib.Path,
     target: str,
 ) -> str:
@@ -496,8 +494,7 @@ def linux_tauri_config(
                     autocomplete_path.absolute().as_posix(): "autocomplete",
                     vscode_path.absolute().as_posix(): "vscode",
                     themes_path.absolute().as_posix(): "themes",
-                    legacy_extension_dir_path.absolute().as_posix(): LINUX_LEGACY_GNOME_EXTENSION_UUID,
-                    modern_extension_dir_path.absolute().as_posix(): LINUX_MODERN_GNOME_EXTENSION_UUID,
+                    extension_dir_path.absolute().as_posix(): LINUX_GNOME_EXTENSION_UUID,
                     bundle_metadata_path.absolute().as_posix(): "bundle-metadata",
                 },
             },
@@ -542,8 +539,7 @@ class LinuxDebResources:
     pty_path: pathlib.Path
     desktop_path: pathlib.Path
     themes_path: pathlib.Path
-    legacy_extension_dir_path: pathlib.Path
-    modern_extension_dir_path: pathlib.Path
+    extension_dir_path: pathlib.Path
     bundle_metadata_path: pathlib.Path
     npm_packages: NpmBuildOutput
 
@@ -589,8 +585,7 @@ def build_linux_deb(
     share_path = bundle_dir / f"usr/share/{LINUX_PACKAGE_NAME}"
     share_path.mkdir(parents=True)
     shutil.copy(DESKTOP_PACKAGE_PATH / "icons" / "128x128.png", desktop_icon_path)
-    shutil.copytree(resources.legacy_extension_dir_path, share_path / LINUX_LEGACY_GNOME_EXTENSION_UUID)
-    shutil.copytree(resources.modern_extension_dir_path, share_path / LINUX_MODERN_GNOME_EXTENSION_UUID)
+    shutil.copytree(resources.extension_dir_path, share_path / LINUX_GNOME_EXTENSION_UUID)
     shutil.copytree(resources.npm_packages.autocomplete_path, share_path / "autocomplete")
     shutil.copytree(resources.npm_packages.dashboard_path, share_path / "dashboard")
     shutil.copytree(resources.themes_path, share_path / "themes")
@@ -665,8 +660,7 @@ def build_linux_full(
         pathlib.Path(extension_dir_path / f"{extension_uuid}.version.txt").write_text(str(extension_version))
         return extension_dir_path
 
-    legacy_extension_dir_path = copy_extension(LINUX_LEGACY_GNOME_EXTENSION_UUID, "gnome-legacy-extension")
-    modern_extension_dir_path = copy_extension(LINUX_MODERN_GNOME_EXTENSION_UUID, "gnome-extension")
+    extension_dir_path = copy_extension(LINUX_GNOME_EXTENSION_UUID, "gnome-extension")
 
     info("Building tauri config")
     tauri_config_path = DESKTOP_PACKAGE_PATH / "build-config.json"
@@ -678,8 +672,7 @@ def build_linux_full(
             autocomplete_path=npm_packages.autocomplete_path,
             vscode_path=npm_packages.vscode_path,
             themes_path=themes_path,
-            legacy_extension_dir_path=legacy_extension_dir_path,
-            modern_extension_dir_path=modern_extension_dir_path,
+            extension_dir_path=extension_dir_path,
             bundle_metadata_path=make_linux_bundle_metadata(Package.APPIMAGE),
             target=target,
         )
@@ -755,8 +748,7 @@ def build_linux_full(
             pty_path=pty_path,
             desktop_path=desktop_path,
             themes_path=themes_path,
-            legacy_extension_dir_path=legacy_extension_dir_path,
-            modern_extension_dir_path=modern_extension_dir_path,
+            extension_dir_path=extension_dir_path,
             bundle_metadata_path=make_linux_bundle_metadata(Package.DEB),
             npm_packages=npm_packages,
         )

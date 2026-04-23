@@ -228,12 +228,11 @@ where
                     .env()
                     .current_dir()
                     .map_err(super::Error::from_std)?
-                    .join("share/applications/amazon-q.desktop");
-                let icon_path = ctx
-                    .env()
-                    .current_dir()
-                    .map_err(super::Error::from_std)?
-                    .join("share/icons/hicolor/128x128/apps/amazon-q.png");
+                    .join(format!("share/applications/{}", fig_util::linux::DESKTOP_ENTRY_NAME));
+                let icon_path = ctx.env().current_dir().map_err(super::Error::from_std)?.join(format!(
+                    "share/icons/hicolor/128x128/apps/{}.png",
+                    fig_util::linux::PACKAGE_NAME
+                ));
                 let desktop_integration =
                     DesktopEntryIntegration::new(ctx, Some(entry_path), Some(icon_path), Some(exec_path.into()));
                 match action {

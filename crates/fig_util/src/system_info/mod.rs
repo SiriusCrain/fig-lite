@@ -265,13 +265,13 @@ pub fn in_wsl() -> bool {
 /// Is the calling binary running on a remote instance
 pub fn is_remote() -> bool {
     // TODO(chay): Add detection for inside docker container
-    in_ssh() || in_cloudshell() || in_wsl() || fig_os_shim::Env::new().q_fake_is_remote()
+    in_ssh() || in_cloudshell() || in_wsl() || fig_os_shim::Env::new().bay_fake_is_remote()
 }
 
 /// Determines if we have an IPC path to a Desktop app from a remote environment
 pub fn has_parent() -> bool {
     static HAS_PARENT: OnceLock<bool> = OnceLock::new();
-    *HAS_PARENT.get_or_init(|| fig_os_shim::Env::new().has_q_parent())
+    *HAS_PARENT.get_or_init(|| fig_os_shim::Env::new().has_bay_parent())
 }
 
 /// This true if the env var `AWS_EXECUTION_ENV=CloudShell`
@@ -352,7 +352,7 @@ pub fn get_system_id() -> Option<&'static str> {
 }
 
 pub fn get_platform() -> &'static str {
-    if let Some(over_ride) = option_env!("Q_OVERRIDE_PLATFORM") {
+    if let Some(over_ride) = option_env!("BAY_OVERRIDE_PLATFORM") {
         over_ride
     } else {
         std::env::consts::OS
@@ -360,7 +360,7 @@ pub fn get_platform() -> &'static str {
 }
 
 pub fn get_arch() -> &'static str {
-    if let Some(over_ride) = option_env!("Q_OVERRIDE_ARCH") {
+    if let Some(over_ride) = option_env!("BAY_OVERRIDE_ARCH") {
         over_ride
     } else {
         std::env::consts::ARCH

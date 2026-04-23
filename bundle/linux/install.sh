@@ -137,11 +137,11 @@ if is_target_triple_gnu && ! check_glibc_version; then
     exit 1
 fi
 
-if [ -n "${Q_INSTALL_GLOBAL:-}" ]; then
+if [ -n "${BAY_INSTALL_GLOBAL:-}" ]; then
     install -m 755 "$SCRIPT_DIR/bin/$CLI_BINARY_NAME" /usr/local/bin/
     install -m 755 "$SCRIPT_DIR/bin/$PTY_BINARY_NAME" /usr/local/bin/
 
-    if [ -z "${Q_SKIP_SETUP:-}" ]; then
+    if [ -z "${BAY_SKIP_SETUP:-}" ]; then
         /usr/local/bin/$CLI_BINARY_NAME integrations install dotfiles
         /usr/local/bin/$CLI_BINARY_NAME setup --global "$@"
     fi
@@ -151,7 +151,7 @@ else
     install -m 755 "$SCRIPT_DIR/bin/$CLI_BINARY_NAME" "$HOME/.local/bin/"
     install -m 755 "$SCRIPT_DIR/bin/$PTY_BINARY_NAME" "$HOME/.local/bin/"
 
-    if [ -z "${Q_SKIP_SETUP:-}" ]; then
+    if [ -z "${BAY_SKIP_SETUP:-}" ]; then
         "$HOME/.local/bin/$CLI_BINARY_NAME" setup "$@"
     fi
 fi

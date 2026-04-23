@@ -56,8 +56,8 @@ RUN npm install -g pnpm@10.0.0
 COPY build-scripts/requirements.txt /tmp/req.txt
 RUN pip3 install --user -r /tmp/req.txt
 
-ENV AMAZON_Q_BUILD_SKIP_FISH_TESTS=1 \
-    AMAZON_Q_BUILD_SKIP_SHELLCHECK_TESTS=1 \
+ENV BAY_BUILD_SKIP_FISH_TESTS=1 \
+    BAY_BUILD_SKIP_SHELLCHECK_TESTS=1 \
     GNOME_SHELL_BUILD_RELEASE=1 \
     CI=true \
     PATH=/opt/node/bin:/root/.local/bin:/root/.cargo/bin:/usr/local/bin:/usr/bin:/bin

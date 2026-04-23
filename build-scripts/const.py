@@ -1,23 +1,22 @@
 import pathlib
 
 
-APP_NAME = "Amazon Q"
-CLI_BINARY_NAME = "q"
-CLI_BINARY_NAME_MINIMAL = "q-minimal"
-PTY_BINARY_NAME = "qterm"
-DESKTOP_BINARY_NAME = "amazon-q"
-URL_SCHEMA = "q"
-TAURI_PRODUCT_NAME = "amazon-q"
-LINUX_PACKAGE_NAME = "amazon-q"
+APP_NAME = "Bay"
+CLI_BINARY_NAME = "bay"
+CLI_BINARY_NAME_MINIMAL = "bay-minimal"
+PTY_BINARY_NAME = "bayterm"
+DESKTOP_BINARY_NAME = "bay-desktop"
+URL_SCHEMA = "bay"
+TAURI_PRODUCT_NAME = "bay-desktop"
+LINUX_PACKAGE_NAME = "bay"
 
 # macos specific
-MACOS_BUNDLE_ID = "com.amazon.codewhisperer"
+MACOS_BUNDLE_ID = "org.siriuscrain.bay"
 DMG_NAME = APP_NAME
 
 # Linux specific
-LINUX_ARCHIVE_NAME = "q"
-LINUX_LEGACY_GNOME_EXTENSION_UUID = "amazon-q-for-cli-legacy-gnome-integration@aws.amazon.com"
-LINUX_MODERN_GNOME_EXTENSION_UUID = "amazon-q-for-cli-gnome-integration@aws.amazon.com"
+LINUX_ARCHIVE_NAME = "bay"
+LINUX_GNOME_EXTENSION_UUID = "bay-gnome-integration@siriuscrain.org"
 
 # cargo packages
 CLI_PACKAGE_NAME = "q_cli"

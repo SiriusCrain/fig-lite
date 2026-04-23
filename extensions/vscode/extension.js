@@ -15,9 +15,9 @@ let config = vscode.workspace.getConfiguration();
 // enable logging.
 let shouldLog = config.get("q.log") === true;
 
-// Ensure that any VSCode terminal session has Q_NEW_SESSION set as an environment variable
+// Ensure that any VSCode terminal session has BAY_NEW_SESSION set as an environment variable
 let osxEnv = config.get("terminal.integrated.env.osx");
-osxEnv["Q_NEW_SESSION"] = "1";
+osxEnv["BAY_NEW_SESSION"] = "1";
 config.update("terminal.integrated.env.osx", osxEnv, true);
 
 function log(...args) {

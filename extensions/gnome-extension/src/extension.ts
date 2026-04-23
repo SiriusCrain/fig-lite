@@ -30,7 +30,7 @@ function debug(...messages) {
 }
 
 const RESOURCES_PREFIX =
-  "resource:///org/gnome/shell/extensions/amazon-q-for-cli-gnome-integration";
+  "resource:///org/gnome/shell/extensions/bay-gnome-integration";
 
 /**
  * @template {string[]} T
@@ -53,7 +53,7 @@ function resource(...resources) {
  * @returns {string} The path to the desktop socket.
  */
 function socket_address() {
-  return `${GLib.getenv("XDG_RUNTIME_DIR")}/cwrun/desktop.sock`;
+  return `${GLib.getenv("XDG_RUNTIME_DIR")}/bayrun/desktop.sock`;
 }
 
 /**
@@ -232,7 +232,7 @@ export default class QCliExtension extends Extension {
 
   /**
    * The extension settings, set according to the schema defined under
-   * [../schemas/org.gnome.shell.extensions.amazon-q-for-cli-gnome-integration.gschema.xml]
+   * [../schemas/org.gnome.shell.extensions.bay-gnome-integration.gschema.xml]
    *
    * @private @property @type {import("../types/.gio").Settings|null}
    */
@@ -283,7 +283,7 @@ export default class QCliExtension extends Extension {
 
     // Load and register resource files.
     this.#resources = Gio.Resource.load(
-      `${this.metadata.path}/resources/amazon-q-for-cli-gnome-integration.gresource`,
+      `${this.metadata.path}/resources/bay-gnome-integration.gresource`,
     );
     Gio.resources_register(this.#resources);
 

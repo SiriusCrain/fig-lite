@@ -3,7 +3,6 @@ use std::borrow::Cow;
 use async_trait::async_trait;
 use eyre::Context;
 use fig_util::CLI_BINARY_NAME;
-use fig_util::url::AUTOCOMPLETE_SSH_WIKI;
 use owo_colors::OwoColorize;
 use regex::Regex;
 
@@ -25,7 +24,7 @@ impl DoctorCheck<()> for SshdConfigCheck {
     async fn check(&self, _: &()) -> Result<(), DoctorError> {
         let info = vec![
             "The /etc/ssh/sshd_config file needs to have the following line:".into(),
-            "  AcceptEnv Q_SET_PARENT".magenta().to_string().into(),
+            "  AcceptEnv BAY_SET_PARENT".magenta().to_string().into(),
             "  AllowStreamLocalForwarding yes".magenta().to_string().into(),
             "".into(),
             "If your sshd_config is already configured correctly then:".into(),
@@ -45,18 +44,14 @@ impl DoctorCheck<()> for SshdConfigCheck {
                 format!("{CLI_BINARY_NAME} doctor").bold()
             )
             .into(),
-            "".into(),
-            format!("See {AUTOCOMPLETE_SSH_WIKI} for more info").into(),
         ];
 
         let sshd_config_path = "/etc/ssh/sshd_config";
 
         let sshd_config = match std::fs::read_to_string(sshd_config_path).context("Could not read sshd_config") {
             Ok(config) => config,
-            Err(_err) if fig_os_shim::Env::new().q_parent().is_ok() => {
-                return Err(DoctorError::warning(format!(
-                    "Could not read sshd_config, check {AUTOCOMPLETE_SSH_WIKI} for more info",
-                )));
+            Err(_err) if fig_os_shim::Env::new().bay_parent().is_ok() => {
+                return Err(DoctorError::warning("Could not read sshd_config".to_string()));
             },
             Err(err) => {
                 return Err(DoctorError::Error {
@@ -91,7 +86,7 @@ impl DoctorCheck<()> for SshdConfigCheck {
 }
 
 fn is_sshd_config_valid(sshd_config: &str) -> bool {
-    let accept_env_regex = Regex::new(r"(?m)^\s*AcceptEnv\s+.*(Q_\*|Q_SET_PARENT)([^\S\r\n]+.*$|$)").unwrap();
+    let accept_env_regex = Regex::new(r"(?m)^\s*AcceptEnv\s+.*(BAY_\*|BAY_SET_PARENT)([^\S\r\n]+.*$|$)").unwrap();
 
     let allow_stream_local_forwarding_regex =
         Regex::new(r"(?m)^\s*AllowStreamLocalForwarding\s+yes([^\S\r\n]+.*$|$)").unwrap();
@@ -118,15 +113,15 @@ mod tests {
     #[test]
     fn test_is_sshd_config_valid() {
         let valid_configs = [
-            "AcceptEnv Q_SET_PARENT\nAllowStreamLocalForwarding yes",
-            "AcceptEnv Q_SET_PARENT\nAllowStreamLocalForwarding yes\n# Some comment",
-            "# Some comment\nAcceptEnv Q_SET_PARENT\nAllowStreamLocalForwarding yes",
-            "Other config 1\nAcceptEnv Q_SET_PARENT\nAllowStreamLocalForwarding yes\n# Some other comment\nOther config 2",
+            "AcceptEnv BAY_SET_PARENT\nAllowStreamLocalForwarding yes",
+            "AcceptEnv BAY_SET_PARENT\nAllowStreamLocalForwarding yes\n# Some comment",
+            "# Some comment\nAcceptEnv BAY_SET_PARENT\nAllowStreamLocalForwarding yes",
+            "Other config 1\nAcceptEnv BAY_SET_PARENT\nAllowStreamLocalForwarding yes\n# Some other comment\nOther config 2",
         ];
 
         let invalid_config = [
-            "AcceptEnv Q_SET_PARENT\nAllowStreamLocalForwarding no",
-            "AcceptEnv Q_SET_PARENT\n# AllowStreamLocalForwarding yes",
+            "AcceptEnv BAY_SET_PARENT\nAllowStreamLocalForwarding no",
+            "AcceptEnv BAY_SET_PARENT\n# AllowStreamLocalForwarding yes",
             "Other config 1\nAllowStreamLocalForwarding yes\nOther config 2",
         ];
 

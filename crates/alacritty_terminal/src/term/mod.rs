@@ -833,7 +833,7 @@ impl<T> Term<T> {
         trace!("New command cursor: {:?}", self.shell_state.cmd_cursor);
 
         // Add work around for emojis
-        if let Ok(cursor_offset) = fig_os_shim::Env::new().q_prompt_offset_workaround()
+        if let Ok(cursor_offset) = fig_os_shim::Env::new().bay_prompt_offset_workaround()
             && let Ok(offset) = cursor_offset.parse::<i32>()
         {
             self.shell_state.cmd_cursor = self.shell_state.cmd_cursor.map(|cursor| Point {

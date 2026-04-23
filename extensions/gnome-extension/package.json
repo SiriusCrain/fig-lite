@@ -1,5 +1,5 @@
 {
-  "name": "amazon-q-for-cli-gnome-integration",
+  "name": "bay-gnome-integration",
   "author": "Amazon Q Developer",
   "version": "1.0.0",
   "description": "Adds support for Amazon Q for CLI completions with GNOME shell",

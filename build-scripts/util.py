@@ -34,7 +34,7 @@ def isLinux() -> bool:
 
 @cache
 def isMusl() -> bool:
-    return os.environ.get("AMAZON_Q_BUILD_MUSL") is not None
+    return os.environ.get("BAY_BUILD_MUSL") is not None
 
 
 @cache

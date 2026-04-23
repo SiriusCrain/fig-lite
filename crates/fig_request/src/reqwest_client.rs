@@ -24,9 +24,9 @@ pub fn create_default_root_cert_store() -> RootCertStore {
     }
 
     let custom_cert = fig_os_shim::Env::new()
-        .q_custom_cert()
+        .bay_custom_cert()
         .ok()
-        .or_else(|| fig_settings::state::get_string("Q_CUSTOM_CERT").ok().flatten());
+        .or_else(|| fig_settings::state::get_string("BAY_CUSTOM_CERT").ok().flatten());
 
     if let Some(custom_cert) = custom_cert {
         match File::open(Path::new(&custom_cert)) {

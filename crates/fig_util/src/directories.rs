@@ -17,8 +17,8 @@ use time::OffsetDateTime;
 #[cfg(unix)]
 use crate::RUNTIME_DIR_NAME;
 use crate::env_var::{
-    Q_BUNDLE_METADATA_PATH,
-    Q_PARENT,
+    BAY_BUNDLE_METADATA_PATH,
+    BAY_PARENT,
 };
 use crate::linux::PACKAGE_NAME;
 use crate::system_info::{
@@ -66,7 +66,7 @@ pub enum DirectoryError {
     FromVecWithNul(#[from] std::ffi::FromVecWithNulError),
     #[error(transparent)]
     IntoString(#[from] std::ffi::IntoStringError),
-    #[error("{Q_PARENT} env variable not set")]
+    #[error("{BAY_PARENT} env variable not set")]
     QParentNotSet,
     #[error("must be ran from an appimage executable")]
     NotAppImage,
@@ -232,8 +232,8 @@ pub fn runtime_dir() -> Result<PathBuf> {
 
 /// The q sockets directory of the local q installation
 ///
-/// - Linux: $XDG_RUNTIME_DIR/cwrun
-/// - MacOS: $TMPDIR/cwrun
+/// - Linux: $XDG_RUNTIME_DIR/bayrun
+/// - MacOS: $TMPDIR/bayrun
 /// - Windows: %TEMP%\{data_dir}\sockets
 pub fn sockets_dir() -> Result<PathBuf> {
     cfg_if::cfg_if! {
@@ -250,8 +250,8 @@ pub fn sockets_dir() -> Result<PathBuf> {
 /// In WSL, this will correctly return the host machine socket path.
 /// In other remote environments, it returns the same as `sockets_dir`
 ///
-/// - Linux: $XDG_RUNTIME_DIR/cwrun
-/// - MacOS: $TMPDIR/cwrun
+/// - Linux: $XDG_RUNTIME_DIR/bayrun
+/// - MacOS: $TMPDIR/bayrun
 /// - Windows: %TEMP%\sockets
 pub fn host_sockets_dir() -> Result<PathBuf> {
     // TODO: make this work again
@@ -324,24 +324,24 @@ pub fn utc_backup_dir() -> Result<PathBuf> {
 
 /// The desktop app socket path
 ///
-/// - MacOS: `$TMPDIR/cwrun/desktop.sock`
-/// - Linux: `$XDG_RUNTIME_DIR/cwrun/desktop.sock`
+/// - MacOS: `$TMPDIR/bayrun/desktop.sock`
+/// - Linux: `$XDG_RUNTIME_DIR/bayrun/desktop.sock`
 /// - Windows: `%TEMP%\sockets\desktop.sock`
 pub fn desktop_socket_path() -> Result<PathBuf> {
     Ok(host_sockets_dir()?.join("desktop.sock"))
 }
 
 /// The path to remote socket
-// - Linux/MacOS on ssh: At the value of `Q_PARENT`
+// - Linux/MacOS on ssh: At the value of `BAY_PARENT`
 // - Linux/MacOS not on ssh:
-/// - MacOS: `$TMPDIR/cwrun/remote.sock`
-/// - Linux: `$XDG_RUNTIME_DIR/cwrun/remote.sock`
+/// - MacOS: `$TMPDIR/bayrun/remote.sock`
+/// - Linux: `$XDG_RUNTIME_DIR/bayrun/remote.sock`
 /// - Windows: `%TEMP%\sockets\remote.sock`
 pub fn remote_socket_path() -> Result<PathBuf> {
     // Normal implementation for non-test code
     // TODO(grant): This is only enabled on Linux for now to prevent public dist
     if is_remote() && !in_cloudshell() && cfg!(target_os = "linux") {
-        if let Some(parent_socket) = fig_os_shim::Env::new().get_os(Q_PARENT) {
+        if let Some(parent_socket) = fig_os_shim::Env::new().get_os(BAY_PARENT) {
             Ok(PathBuf::from(parent_socket))
         } else {
             Err(DirectoryError::QParentNotSet)
@@ -353,8 +353,8 @@ pub fn remote_socket_path() -> Result<PathBuf> {
 
 /// The path to local remote socket
 ///
-/// - MacOS: `$TMPDIR/cwrun/remote.sock`
-/// - Linux: `$XDG_RUNTIME_DIR/cwrun/remote.sock`
+/// - MacOS: `$TMPDIR/bayrun/remote.sock`
+/// - Linux: `$XDG_RUNTIME_DIR/bayrun/remote.sock`
 /// - Windows: `%TEMP%\sockets\remote.sock`
 pub fn local_remote_socket_path() -> Result<PathBuf> {
     Ok(host_sockets_dir()?.join("remote.sock"))
@@ -363,8 +363,8 @@ pub fn local_remote_socket_path() -> Result<PathBuf> {
 /// Get path to a figterm socket
 ///
 /// - Linux/Macos: `/var/tmp/fig/%USERNAME%/figterm/$SESSION_ID.sock`
-/// - MacOS: `$TMPDIR/cwrun/t/$SESSION_ID.sock`
-/// - Linux: `$XDG_RUNTIME_DIR/cwrun/t/$SESSION_ID.sock`
+/// - MacOS: `$TMPDIR/bayrun/t/$SESSION_ID.sock`
+/// - Linux: `$XDG_RUNTIME_DIR/bayrun/t/$SESSION_ID.sock`
 /// - Windows: `%TEMP%\sockets\t\$SESSION_ID.sock`
 pub fn figterm_socket_path(session_id: impl Display) -> Result<PathBuf> {
     Ok(sockets_dir()?.join("t").join(format!("{session_id}.sock")))
@@ -427,7 +427,7 @@ pub fn manifest_path() -> Result<PathBuf> {
 /// resources directory from the AppImage mount, known only by the AppImage itself (ie, the desktop
 /// binary).
 pub fn bundle_metadata_path<Ctx: EnvProvider + PlatformProvider>(ctx: &Ctx) -> Result<PathBuf> {
-    if let Some(path) = ctx.env().get_os(Q_BUNDLE_METADATA_PATH) {
+    if let Some(path) = ctx.env().get_os(BAY_BUNDLE_METADATA_PATH) {
         return Ok(path.into());
     }
     Ok(resources_path_ctx(ctx)?.join("bundle-metadata").join("metadata.json"))
@@ -488,7 +488,10 @@ pub fn appimage_desktop_entry_path<Ctx: EnvProvider>(ctx: &Ctx) -> Result<PathBu
     if !ctx.env().in_appimage() {
         return Err(DirectoryError::NotAppImage);
     }
-    Ok(ctx.env().current_dir()?.join("share/applications/amazon-q.desktop"))
+    Ok(ctx
+        .env()
+        .current_dir()?
+        .join(format!("share/applications/{}", crate::linux::DESKTOP_ENTRY_NAME)))
 }
 
 /// The path to the icon bundled with the AppImage to be used for the desktop entry file.
@@ -565,7 +568,7 @@ mod tests {
         #[cfg(unix)]
         assert_eq!(
             host_sockets_dir().unwrap().file_name().unwrap().to_str().unwrap(),
-            format!("cwrun")
+            format!("bayrun")
         );
 
         #[cfg(windows)]
@@ -673,8 +676,8 @@ mod tests {
 
     #[test]
     fn snapshot_sockets_dir() {
-        linux!(sockets_dir(), @"$XDG_RUNTIME_DIR/cwrun");
-        macos!(sockets_dir(), @"$TMPDIR/cwrun");
+        linux!(sockets_dir(), @"$XDG_RUNTIME_DIR/bayrun");
+        macos!(sockets_dir(), @"$TMPDIR/bayrun");
         windows!(sockets_dir(), @r"C:\Users\$USER\AppData\Local\Temp\AmazonQ\sockets");
     }
 
@@ -694,29 +697,29 @@ mod tests {
 
     #[test]
     fn snapshot_fig_socket_path() {
-        linux!(desktop_socket_path(), @"$XDG_RUNTIME_DIR/cwrun/desktop.sock");
-        macos!(desktop_socket_path(), @"$TMPDIR/cwrun/desktop.sock");
+        linux!(desktop_socket_path(), @"$XDG_RUNTIME_DIR/bayrun/desktop.sock");
+        macos!(desktop_socket_path(), @"$TMPDIR/bayrun/desktop.sock");
         windows!(desktop_socket_path(), @r"C:\Users\$USER\AppData\Local\Temp\AmazonQ\sockets\desktop.sock");
     }
 
     #[test]
     fn snapshot_remote_socket_path() {
-        linux!(remote_socket_path(), @"$XDG_RUNTIME_DIR/cwrun/remote.sock");
-        macos!(remote_socket_path(), @"$TMPDIR/cwrun/remote.sock");
+        linux!(remote_socket_path(), @"$XDG_RUNTIME_DIR/bayrun/remote.sock");
+        macos!(remote_socket_path(), @"$TMPDIR/bayrun/remote.sock");
         windows!(remote_socket_path(), @r"C:\Users\$USER\AppData\Local\Temp\AmazonQ\sockets\remote.sock");
     }
 
     #[test]
     fn snapshot_local_remote_socket_path() {
-        linux!(local_remote_socket_path(), @"$XDG_RUNTIME_DIR/cwrun/remote.sock");
-        macos!(local_remote_socket_path(), @"$TMPDIR/cwrun/remote.sock");
+        linux!(local_remote_socket_path(), @"$XDG_RUNTIME_DIR/bayrun/remote.sock");
+        macos!(local_remote_socket_path(), @"$TMPDIR/bayrun/remote.sock");
         windows!(local_remote_socket_path(), @r"C:\Users\$USER\AppData\Local\Temp\AmazonQ\sockets\remote.sock");
     }
 
     #[test]
     fn snapshot_figterm_socket_path() {
-        linux!(figterm_socket_path("$SESSION_ID"), @"$XDG_RUNTIME_DIR/cwrun/t/$SESSION_ID.sock");
-        macos!(figterm_socket_path("$SESSION_ID"), @"$TMPDIR/cwrun/t/$SESSION_ID.sock");
+        linux!(figterm_socket_path("$SESSION_ID"), @"$XDG_RUNTIME_DIR/bayrun/t/$SESSION_ID.sock");
+        macos!(figterm_socket_path("$SESSION_ID"), @"$TMPDIR/bayrun/t/$SESSION_ID.sock");
         windows!(figterm_socket_path("$SESSION_ID"), @r"C:\Users\$USER\AppData\Local\Temp\AmazonQ\sockets\t\$SESSION_ID.sock");
     }
 

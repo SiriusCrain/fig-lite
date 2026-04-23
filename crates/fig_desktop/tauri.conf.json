@@ -3,13 +3,13 @@
     "distDir": []
   },
   "package": {
-    "productName": "Amazon Q"
+    "productName": "Bay Desktop"
   },
   "tauri": {
     "bundle": {
       "targets": "app",
       "active": true,
-      "identifier": "com.amazon.codewhisperer",
+      "identifier": "org.siriuscrain.bay",
       "icon": [
         "icons/icon.icns",
         "icons/icon.ico",

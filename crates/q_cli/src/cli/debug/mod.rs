@@ -37,7 +37,7 @@ use fig_ipc::local::{
 };
 use fig_os_shim::Env;
 use fig_util::consts::APP_BUNDLE_ID;
-use fig_util::env_var::Q_DEBUG_SHELL;
+use fig_util::env_var::BAY_DEBUG_SHELL;
 use fig_util::macos::BUNDLE_CONTENTS_MACOS_PATH;
 use fig_util::manifest::FileType;
 use fig_util::{
@@ -811,7 +811,7 @@ impl DebugSubcommand {
                 let tmp_dir = TempDir::new()?;
 
                 let mut command = Command::new(PTY_BINARY_NAME);
-                command.env(Q_DEBUG_SHELL, "1").arg("--");
+                command.env(BAY_DEBUG_SHELL, "1").arg("--");
 
                 match Shell::current_shell() {
                     Some(shell) => {

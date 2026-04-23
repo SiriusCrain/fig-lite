@@ -42,11 +42,7 @@ use crate::CrateError;
 
 pub const GNOME_SHELL_PROCESS_NAME: &str = "gnome-shell";
 
-/// Extension uuid for GNOME Shell v44 and prior.
-const LEGACY_EXTENSION_UUID: &str = "amazon-q-for-cli-legacy-gnome-integration@aws.amazon.com";
-
-/// Extension uuid for GNOME Shell v45 and after.
-const MODERN_EXTENSION_UUID: &str = "amazon-q-for-cli-gnome-integration@aws.amazon.com";
+const EXTENSION_UUID: &str = "bay-gnome-integration@siriuscrain.org";
 
 /// Represents the installation status for the Amazon Q CLI GNOME Shell extension.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -315,14 +311,9 @@ where
         }
     }
 
-    /// Returns the UUID (ie, extension name) of the Amazon Q extension intended for the
-    /// current system.
+    /// Returns the UUID (ie, extension name) of the Bay extension.
     pub async fn extension_uuid(&self) -> Result<String, ExtensionsError> {
-        if self.gnome_shell_version().await?.major >= 45 {
-            Ok(MODERN_EXTENSION_UUID.to_string())
-        } else {
-            Ok(LEGACY_EXTENSION_UUID.to_string())
-        }
+        Ok(EXTENSION_UUID.to_string())
     }
 
     /// Path to the directory containing the extension intended for the current system.
@@ -714,14 +705,14 @@ mod tests {
         fn test_extension_metadata_deser() {
             let metadata = r#"
             {
-              "uuid": "amazon-q-for-cli-legacy-gnome-integration@aws.amazon.com",
-              "name": "Amazon Q for CLI GNOME Integration",
-              "url": "https://github.com/aws",
+              "uuid": "bay-gnome-integration@siriuscrain.org",
+              "name": "Bay GNOME Integration",
+              "url": "https://github.com/SiriusCrain/fig-lite",
               "version": 1,
-              "description": "Integrates Amazon Q for CLI with GNOME Shell prior to v45",
-              "gettext-domain": "amazon-q-for-cli-legacy-gnome-integration",
-              "settings-schema": "org.gnome.shell.extensions.amazon-q-for-cli-legacy-gnome-integration",
-              "shell-version": ["41", "42", "43", "44"]
+              "description": "Integrates Bay with GNOME Shell",
+              "gettext-domain": "bay-gnome-integration",
+              "settings-schema": "org.gnome.shell.extensions.bay-gnome-integration",
+              "shell-version": ["48", "49", "50"]
             }"#;
             let metadata: ExtensionMetadata = serde_json::from_str(metadata).unwrap();
             assert_eq!(metadata.version, 1);

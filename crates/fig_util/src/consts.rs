@@ -1,72 +1,69 @@
-pub const APP_BUNDLE_ID: &str = "com.amazon.codewhisperer";
-pub const APP_BUNDLE_NAME: &str = "Amazon Q.app";
+pub const APP_BUNDLE_ID: &str = "org.siriuscrain.bay";
+pub const APP_BUNDLE_NAME: &str = "Bay.app";
 
 #[cfg(target_os = "macos")]
-pub const APP_PROCESS_NAME: &str = "amazon_q";
+pub const APP_PROCESS_NAME: &str = "bay-desktop";
 #[cfg(target_os = "linux")]
-pub const APP_PROCESS_NAME: &str = "amazon-q";
+pub const APP_PROCESS_NAME: &str = "bay-desktop";
 
 #[cfg(windows)]
-pub const APP_PROCESS_NAME: &str = "amazon_q.exe";
+pub const APP_PROCESS_NAME: &str = "bay-desktop.exe";
 
 /// The name configured under `"package.productName"` in the tauri.conf.json file.
-pub const TAURI_PRODUCT_NAME: &str = "amazon_q";
+pub const TAURI_PRODUCT_NAME: &str = "bay-desktop";
 
-pub const CLI_BINARY_NAME: &str = "q";
-pub const CLI_BINARY_NAME_MINIMAL: &str = "q-minimal";
-pub const PTY_BINARY_NAME: &str = "qterm";
+pub const CLI_BINARY_NAME: &str = "bay";
+pub const CLI_BINARY_NAME_MINIMAL: &str = "bay-minimal";
+pub const PTY_BINARY_NAME: &str = "bayterm";
 
-pub const CLI_CRATE_NAME: &str = "q_cli";
+pub const CLI_CRATE_NAME: &str = "bay_cli";
 
-pub const URL_SCHEMA: &str = "q";
+pub const URL_SCHEMA: &str = "bay";
 
-pub const PRODUCT_NAME: &str = "Amazon Q";
+pub const PRODUCT_NAME: &str = "Bay";
 
-pub const RUNTIME_DIR_NAME: &str = "cwrun";
+pub const RUNTIME_DIR_NAME: &str = "bayrun";
 
 /// Data directory name used in paths like ~/.local/share/{DATA_DIR_NAME}
 #[cfg(unix)]
-pub const DATA_DIR_NAME: &str = "amazon-q";
+pub const DATA_DIR_NAME: &str = "bay";
 #[cfg(windows)]
-pub const DATA_DIR_NAME: &str = "AmazonQ";
+pub const DATA_DIR_NAME: &str = "Bay";
 
 /// Backup directory name
-pub const BACKUP_DIR_NAME: &str = ".amazon-q.dotfiles.bak";
+pub const BACKUP_DIR_NAME: &str = ".bay.dotfiles.bak";
 
-// These are the old "CodeWhisperer" branding, used anywhere we will not update to Amazon Q
-pub const OLD_PRODUCT_NAME: &str = "CodeWhisperer";
-pub const OLD_CLI_BINARY_NAMES: &[&str] = &["cw"];
-pub const OLD_PTY_BINARY_NAMES: &[&str] = &["cwterm"];
+// Previous branding — used by uninstall/migration code to find legacy installs.
+pub const OLD_PRODUCT_NAME: &str = "Amazon Q";
+pub const OLD_CLI_BINARY_NAMES: &[&str] = &["q", "cw"];
+pub const OLD_PTY_BINARY_NAMES: &[&str] = &["qterm", "cwterm"];
+/// Previous unix data directory name, used for one-shot migration on startup.
+#[cfg(unix)]
+pub const OLD_DATA_DIR_NAME: &str = "amazon-q";
+#[cfg(windows)]
+pub const OLD_DATA_DIR_NAME: &str = "AmazonQ";
 
-pub const GITHUB_REPO_NAME: &str = "aws/amazon-q-developer-cli";
-
-pub mod url {
-    pub const USER_MANUAL: &str = "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line.html";
-    pub const AUTOCOMPLETE_WIKI: &str =
-        "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-autocomplete.html";
-    pub const AUTOCOMPLETE_SSH_WIKI: &str =
-        "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-autocomplete-ssh.html";
-}
+pub const GITHUB_REPO_NAME: &str = "SiriusCrain/fig-lite";
 
 /// Build time env vars
 pub mod build {
     /// The target of the current build, e.g. "aarch64-unknown-linux-musl"
-    pub const TARGET_TRIPLE: Option<&str> = option_env!("AMAZON_Q_BUILD_TARGET_TRIPLE");
+    pub const TARGET_TRIPLE: Option<&str> = option_env!("BAY_BUILD_TARGET_TRIPLE");
 
     /// The variant of the current build
-    pub const VARIANT: Option<&str> = option_env!("AMAZON_Q_BUILD_VARIANT");
+    pub const VARIANT: Option<&str> = option_env!("BAY_BUILD_VARIANT");
 
     /// A git full sha hash of the current build
-    pub const HASH: Option<&str> = option_env!("AMAZON_Q_BUILD_HASH");
+    pub const HASH: Option<&str> = option_env!("BAY_BUILD_HASH");
 
     /// The datetime in rfc3339 format of the current build
-    pub const DATETIME: Option<&str> = option_env!("AMAZON_Q_BUILD_DATETIME");
+    pub const DATETIME: Option<&str> = option_env!("BAY_BUILD_DATETIME");
 
     /// If `fish` tests should be skipped
-    pub const SKIP_FISH_TESTS: bool = option_env!("AMAZON_Q_BUILD_SKIP_FISH_TESTS").is_some();
+    pub const SKIP_FISH_TESTS: bool = option_env!("BAY_BUILD_SKIP_FISH_TESTS").is_some();
 
     /// If `shellcheck` tests should be skipped
-    pub const SKIP_SHELLCHECK_TESTS: bool = option_env!("AMAZON_Q_BUILD_SKIP_SHELLCHECK_TESTS").is_some();
+    pub const SKIP_SHELLCHECK_TESTS: bool = option_env!("BAY_BUILD_SKIP_SHELLCHECK_TESTS").is_some();
 }
 
 /// macOS specific constants
@@ -78,13 +75,13 @@ pub mod macos {
 }
 
 pub mod linux {
-    pub const DESKTOP_ENTRY_NAME: &str = "amazon-q.desktop";
+    pub const DESKTOP_ENTRY_NAME: &str = "bay.desktop";
 
     /// Name of the deb package.
-    pub const PACKAGE_NAME: &str = "amazon-q";
+    pub const PACKAGE_NAME: &str = "bay";
 
     /// The wm_class used for the application windows.
-    pub const DESKTOP_APP_WM_CLASS: &str = "Amazon-q";
+    pub const DESKTOP_APP_WM_CLASS: &str = "Bay";
 }
 
 pub mod env_var {
@@ -100,38 +97,38 @@ pub mod env_var {
     }
 
     define_env_vars! {
-        /// The UUID of the current parent qterm instance
-        QTERM_SESSION_ID = "QTERM_SESSION_ID",
+        /// The UUID of the current parent bayterm instance
+        BAYTERM_SESSION_ID = "BAYTERM_SESSION_ID",
 
         /// The current parent socket to connect to
-        Q_PARENT = "Q_PARENT",
+        BAY_PARENT = "BAY_PARENT",
 
-        /// Set the [`Q_PARENT`] parent socket to connect to
-        Q_SET_PARENT = "Q_SET_PARENT",
+        /// Set the [`BAY_PARENT`] parent socket to connect to
+        BAY_SET_PARENT = "BAY_SET_PARENT",
 
-        /// Guard for the [`Q_SET_PARENT`] check
-        Q_SET_PARENT_CHECK = "Q_SET_PARENT_CHECK",
+        /// Guard for the [`BAY_SET_PARENT`] check
+        BAY_SET_PARENT_CHECK = "BAY_SET_PARENT_CHECK",
 
-        /// Set if qterm is running, contains the version
-        Q_TERM = "Q_TERM",
+        /// Set if bayterm is running, contains the version
+        BAY_TERM = "BAY_TERM",
 
         /// Sets the current log level
-        Q_LOG_LEVEL = "Q_LOG_LEVEL",
+        BAY_LOG_LEVEL = "BAY_LOG_LEVEL",
 
         /// Overrides the ZDOTDIR environment variable
-        Q_ZDOTDIR = "Q_ZDOTDIR",
+        BAY_ZDOTDIR = "BAY_ZDOTDIR",
 
-        /// Indicates a process was launched by Amazon Q
-        PROCESS_LAUNCHED_BY_Q = "PROCESS_LAUNCHED_BY_Q",
+        /// Indicates a process was launched by Bay
+        PROCESS_LAUNCHED_BY_BAY = "PROCESS_LAUNCHED_BY_BAY",
 
-        /// The shell to use in qterm
-        Q_SHELL = "Q_SHELL",
+        /// The shell to use in bayterm
+        BAY_SHELL = "BAY_SHELL",
 
         /// Indicates the user is debugging the shell
-        Q_DEBUG_SHELL = "Q_DEBUG_SHELL",
+        BAY_DEBUG_SHELL = "BAY_DEBUG_SHELL",
 
         /// Overrides the path to the bundle metadata released with certain desktop builds.
-        Q_BUNDLE_METADATA_PATH = "Q_BUNDLE_METADATA_PATH"
+        BAY_BUNDLE_METADATA_PATH = "BAY_BUNDLE_METADATA_PATH"
     }
 }
 

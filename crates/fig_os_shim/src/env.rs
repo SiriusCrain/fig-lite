@@ -152,11 +152,11 @@ impl Env {
     }
 
     pub fn in_codespaces(&self) -> bool {
-        self.get_os("CODESPACES").is_some() || self.get_os("Q_CODESPACES").is_some()
+        self.get_os("CODESPACES").is_some() || self.get_os("BAY_CODESPACES").is_some()
     }
 
     pub fn in_ci(&self) -> bool {
-        self.get_os("CI").is_some() || self.get_os("Q_CI").is_some()
+        self.get_os("CI").is_some() || self.get_os("BAY_CI").is_some()
     }
 
     /// Whether or not the current executable is run from an AppImage.
@@ -167,60 +167,56 @@ impl Env {
     }
 
     // Q-specific environment variable methods
-    pub fn q_fake_is_remote(&self) -> bool {
-        self.get_os("Q_FAKE_IS_REMOTE").is_some()
+    pub fn bay_fake_is_remote(&self) -> bool {
+        self.get_os("BAY_FAKE_IS_REMOTE").is_some()
     }
 
-    pub fn q_log_level(&self) -> Result<String, VarError> {
-        self.get("Q_LOG_LEVEL")
+    pub fn bay_log_level(&self) -> Result<String, VarError> {
+        self.get("BAY_LOG_LEVEL")
     }
 
-    pub fn q_log_stdout(&self) -> bool {
-        self.get_os("Q_LOG_STDOUT").is_some()
+    pub fn bay_log_stdout(&self) -> bool {
+        self.get_os("BAY_LOG_STDOUT").is_some()
     }
 
-    pub fn amazon_q_sigv4(&self) -> bool {
-        self.get("AMAZON_Q_SIGV4").is_ok_and(|v| !v.is_empty())
+    pub fn bay_cli_client_application(&self) -> Result<String, VarError> {
+        self.get("BAY_CLI_CLIENT_APPLICATION")
     }
 
-    pub fn q_cli_client_application(&self) -> Result<String, VarError> {
-        self.get("Q_CLI_CLIENT_APPLICATION")
+    pub fn bay_parent(&self) -> Result<String, VarError> {
+        self.get("BAY_PARENT")
     }
 
-    pub fn q_parent(&self) -> Result<String, VarError> {
-        self.get("Q_PARENT")
+    pub fn bay_term(&self) -> Result<String, VarError> {
+        self.get("BAY_TERM")
     }
 
-    pub fn q_term(&self) -> Result<String, VarError> {
-        self.get("Q_TERM")
+    pub fn bay_init_snapshot_test(&self) -> bool {
+        self.get_os("BAY_INIT_SNAPSHOT_TEST").is_some()
     }
 
-    pub fn q_init_snapshot_test(&self) -> bool {
-        self.get_os("Q_INIT_SNAPSHOT_TEST").is_some()
+    pub fn bay_desktop_release_url(&self) -> Result<String, VarError> {
+        self.get("BAY_DESKTOP_RELEASE_URL")
     }
 
-    pub fn q_desktop_release_url(&self) -> Result<String, VarError> {
-        self.get("Q_DESKTOP_RELEASE_URL")
+    pub fn bay_backend(&self) -> Result<String, VarError> {
+        self.get("BAY_BACKEND")
     }
 
-    pub fn q_backend(&self) -> Result<String, VarError> {
-        self.get("Q_BACKEND")
+    pub fn bay_prompt_offset_workaround(&self) -> Result<String, VarError> {
+        self.get("BAY_PROMPT_OFFSET_WORKAROUND")
     }
 
-    pub fn q_prompt_offset_workaround(&self) -> Result<String, VarError> {
-        self.get("Q_PROMPT_OFFSET_WORKAROUND")
+    pub fn bay_use_sendmessage(&self) -> bool {
+        self.get("BAY_USE_SENDMESSAGE").is_ok_and(|v| !v.is_empty())
     }
 
-    pub fn q_use_sendmessage(&self) -> bool {
-        self.get("Q_USE_SENDMESSAGE").is_ok_and(|v| !v.is_empty())
+    pub fn bay_custom_cert(&self) -> Result<String, VarError> {
+        self.get("BAY_CUSTOM_CERT")
     }
 
-    pub fn q_custom_cert(&self) -> Result<String, VarError> {
-        self.get("Q_CUSTOM_CERT")
-    }
-
-    pub fn has_q_parent(&self) -> bool {
-        self.q_parent().is_ok()
+    pub fn has_bay_parent(&self) -> bool {
+        self.bay_parent().is_ok()
     }
 }
 

@@ -275,9 +275,9 @@ impl ShellScriptShellIntegration {
             } else {
                 let add_to_path_line = match self.shell {
                     Shell::Bash | Shell::Zsh => indoc::indoc! {r#"
-                        _Q_LOCAL_BIN="$HOME/.local/bin"
-                        [[ ":$PATH:" != *":$_Q_LOCAL_BIN:"* ]] && PATH="${PATH:+"$PATH:"}$_Q_LOCAL_BIN"
-                        unset _Q_LOCAL_BIN
+                        _BAY_LOCAL_BIN="$HOME/.local/bin"
+                        [[ ":$PATH:" != *":$_BAY_LOCAL_BIN:"* ]] && PATH="${PATH:+"$PATH:"}$_BAY_LOCAL_BIN"
+                        unset _BAY_LOCAL_BIN
                     "#},
                     Shell::Fish => "contains $HOME/.local/bin $PATH; or set -a PATH $HOME/.local/bin",
                     Shell::Nu => "",

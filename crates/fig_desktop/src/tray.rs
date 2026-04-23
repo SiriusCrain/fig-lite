@@ -12,7 +12,6 @@ use fig_util::manifest::{
     FileType,
     Variant,
 };
-use fig_util::url::USER_MANUAL;
 use tao::event_loop::ControlFlow;
 use tracing::{
     debug,
@@ -304,11 +303,6 @@ pub fn handle_event(menu_event: &MenuEvent, proxy: &EventLoopProxy) {
                 std::process::exit(0);
             });
         },
-        "user-manual" => {
-            if let Err(err) = fig_util::open_url(USER_MANUAL) {
-                error!(%err, "Failed to open user manual url");
-            }
-        },
         id => {
             trace!(?id, "Unhandled tray event");
         },
@@ -505,7 +499,6 @@ impl MenuElement {
 
 fn menu() -> Vec<MenuElement> {
     let not_working = MenuElement::entry(None, None, format!("{PRODUCT_NAME} not working?"), "not-working");
-    let manual = MenuElement::entry(None, None, "User Guide", "user-manual");
     let version = MenuElement::info(None, format!("Version: {}", env!("CARGO_PKG_VERSION")));
     let update = MenuElement::entry(None, None, "Check for updates...", "update");
     let quit = MenuElement::entry(None, None, format!("Quit {PRODUCT_NAME}"), "quit");
@@ -527,7 +520,6 @@ fn menu() -> Vec<MenuElement> {
 
     menu.extend(vec![
         MenuElement::Separator,
-        manual,
         not_working,
         MenuElement::Separator,
         version,

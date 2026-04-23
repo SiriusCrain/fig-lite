@@ -2,7 +2,7 @@
 export const PRODUCT_NAME = "Amazon Q";
 export const CLI_BINARY_NAME = "q";
 
-export const DESKTOP_ENTRY_NAME = "amazon-q.desktop";
+export const DESKTOP_ENTRY_NAME = "bay.desktop";
 
 export const USER_MANUAL_URL =
   "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line.html";
@@ -10,7 +10,7 @@ export const AUTOCOMPLETE_WIKI_URL =
   "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-autocomplete.html";
 export const AUTOCOMPLETE_SSH_WIKI_URL =
   "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-autocomplete-ssh.html";
-export const Q_MIGRATION_URL =
+export const BAY_MIGRATION_URL =
   "https://docs.aws.amazon.com/codewhisperer/latest/userguide/whisper-legacy.html";
 export const KIRO_CLI_URL = "https://kiro.dev/cli-upgrade";
 

@@ -49,5 +49,5 @@
 ## Build
 
 - **Docker-based reproducible build:** `build.sh` → `Dockerfile.build` → `build-scripts/main.py`.
-- **Cargo incremental caching** keyed off the git commit date (`AMAZON_Q_BUILD_DATETIME`) so rebuilds at a stable commit reuse fingerprints.
+- **Cargo incremental caching** keyed off the git commit date (`BAY_BUILD_DATETIME`) so rebuilds at a stable commit reuse fingerprints.
 - **Tauri bundling** is split from the cargo build; AppImage is skipped when the existing bundle is newer than the freshly-built binary.
