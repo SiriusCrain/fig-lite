@@ -77,7 +77,9 @@ def build_npm_packages(run_test: bool = True) -> NpmBuildOutput:
     package_json["version"] = version()
     package_json_path.write_text(json.dumps(package_json, indent=2))
 
-    run_cmd(["pnpm", "build"])
+    # --force bypasses the turbo cache so feed.json (outside any package) always
+    # produces a fresh dashboard bundle in release builds.
+    run_cmd(["pnpm", "turbo", "build", "--force"])
     if run_test:
         run_cmd(["pnpm", "test", "--", "--run"])
 

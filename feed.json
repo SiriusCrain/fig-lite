@@ -11,6 +11,13 @@
       "changes": []
     },
     {
+      "type": "announcement",
+      "date": "2026-04-23",
+      "version": "0.1.0",
+      "title": "Amazon Q is now Bay",
+      "description": "Bay is a lean fork of Amazon Q CLI focused on spec-driven shell autocomplete. Chat, inline AI, authentication, telemetry, and AWS integration have been removed."
+    },
+    {
       "type": "release",
       "date": "2025-11-17",
       "version": "1.19.7",
